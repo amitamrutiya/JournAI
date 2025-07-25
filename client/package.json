@@ -3,25 +3,56 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
     "build": "next build",
+    "dev": "next dev --turbopack",
+    "format": "prettier --write .",
+    "lint": "next lint",
+    "lint:fix": "npm run lint -- --fix",
+    "prisma:deploy": "npx prisma migrate deploy && npx prisma generate",
+    "prisma:migrate": "npx prisma migrate dev --name",
+    "prisma:push": "npx prisma db push && npx prisma generate",
+    "prisma:reset-dev": "run-s prisma:wipe prisma:seed dev",
+    "prisma:seed": "tsx ./prisma/seed.ts",
+    "prisma:setup": "prisma generate && prisma migrate deploy && prisma db push",
+    "prisma:studio": "npx prisma studio",
+    "prisma:wipe": "npx prisma migrate reset --force && npx prisma db push",
     "start": "next start",
-    "lint": "next lint"
+    "test": "vitest --reporter=verbose",
+    "test:e2e": "npx playwright test",
+    "test:e2e:ui": "npx playwright test --ui",
+    "type-check": "tsc -b"
   },
   "dependencies": {
+    "next": "15.4.3",
     "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "next": "15.4.3"
+    "react-dom": "19.1.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@eslint/compat": "^1.3.1",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "@typescript-eslint/parser": "^8.38.0",
     "eslint": "^9",
     "eslint-config-next": "15.4.3",
-    "@eslint/eslintrc": "^3"
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-playwright": "^2.2.0",
+    "eslint-plugin-prettier": "^5.5.3",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "eslint-plugin-unicorn": "^60.0.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
   }
 }
