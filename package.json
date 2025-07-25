@@ -8,5 +8,15 @@
   },
   "scripts": {
     "prepare": "husky install"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog",
+      "scopes": [
+        "client",
+        "server",
+        "root"
+      ]
+    }
   }
 }
