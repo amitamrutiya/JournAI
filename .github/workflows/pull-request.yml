@@ -55,30 +55,30 @@ jobs:
       - name: ⚙️ commitlint
         uses: wagoid/commitlint-github-action@v4
 
-  # vitest:
-  #   name: ⚡ Vitest
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: ⬇️ Checkout repo
-  #       uses: actions/checkout@v3
+  vitest:
+    name: ⚡ Vitest
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v3
 
-  #     - name: ⎔ Setup node
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 20
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
 
-  #     - name: 📥 Download deps
-  #       uses: bahmutov/npm-install@v1
+      - name: 📥 Download deps
+        uses: bahmutov/npm-install@v1
 
-  #     - name: 🛠 Setup Database
-  #       run: npm run prisma:wipe
-  #       env:
-  #         DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: 🛠 Setup Database
+        run: npm run prisma:wipe
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-  #     - name: ⚡ Run vitest
-  #       run: npm run test -- --coverage
-  #       env:
-  #         DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: ⚡ Run vitest
+        run: npm run test -- --coverage
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
   # playwright:
   #   name: 🎭 Playwright
