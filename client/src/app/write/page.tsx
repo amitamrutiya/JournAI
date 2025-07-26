@@ -3,7 +3,7 @@
 import { SignInButton, useAuth } from '@clerk/nextjs';
 import { Brain, Loader2, LogIn, Save } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 import { AIAnalysisCard } from '@/components/journal/ai-analysis-card';
 import { JournalEditor } from '@/components/journal/journal-editor';
@@ -25,7 +25,7 @@ interface AIAnalysis {
   reason: string;
 }
 
-export default function WritePage() {
+function WritePageContent() {
   const { isSignedIn } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -322,5 +322,24 @@ export default function WritePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function WritePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto max-w-4xl px-4 py-8">
+          <div className="flex h-96 items-center justify-center">
+            <div className="space-y-4 text-center">
+              <Loader2 className="text-muted-foreground mx-auto h-8 w-8 animate-spin" />
+              <p className="text-muted-foreground">Loading...</p>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <WritePageContent />
+    </Suspense>
   );
 }
