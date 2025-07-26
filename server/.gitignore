@@ -5,3 +5,4 @@ node_modules
 # Log files
 logs/
 *.log
+dist

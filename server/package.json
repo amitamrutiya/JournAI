@@ -4,6 +4,10 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
     "seed": "tsx ./src/db/seed.ts",
     "prisma:deploy": "npx prisma migrate deploy && npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev --name",
