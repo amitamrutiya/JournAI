@@ -3,16 +3,24 @@
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './calendar.css';
 
+import { SignInButton, useAuth } from '@clerk/nextjs';
 import { format } from 'date-fns';
-import { CalendarDays, Clock, FileText } from 'lucide-react';
+import { CalendarDays, Clock, FileText, Trash2 } from 'lucide-react';
 import moment from 'moment';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { useDeleteJournal, useGetUserJournals } from '@/hooks/use-journal-api';
 import { MOODS } from '@/lib/utils';
 
 interface JournalEntry {
@@ -22,7 +30,7 @@ interface JournalEntry {
   mood: string;
   summary?: string;
   createdAt: string;
-  wordCount: number;
+  wordCount?: number;
 }
 
 interface CalendarEvent {
@@ -39,101 +47,43 @@ const getMoodEmoji = (mood: string) => {
   return MOODS[mood as keyof typeof MOODS]?.emoji || '📝';
 };
 
-function generateMockEvents(): CalendarEvent[] {
-  const events: CalendarEvent[] = [];
-  const moods = Object.keys(MOODS);
-
-  // Generate events for the last 30 days
-  for (let index = 0; index < 30; index++) {
-    const date = new Date();
-    date.setDate(date.getDate() - index);
-
-    // 70% chance of having an entry on any given day
-    if (Math.random() > 0.3) {
-      const mood = moods[Math.floor(Math.random() * moods.length)];
-      const entry: JournalEntry = {
-        id: `mock-entry-${index}`,
-        title: `Day ${30 - index} Reflection`,
-        content: `This is a mock journal entry for ${format(
-          date,
-          'MMMM do',
-        )}. It represents the thoughts and feelings of that day.`,
-        mood,
-        summary: `A brief reflection on the events and emotions of ${format(
-          date,
-          'MMMM do',
-        )}.`,
-        createdAt: date.toISOString(),
-        wordCount: Math.floor(Math.random() * 400) + 100,
-      };
-
-      events.push({
-        id: entry.id,
-        title: `${getMoodEmoji(mood)} ${entry.title}`,
-        start: date,
-        end: date,
-        resource: entry,
-      });
-    }
-  }
-
-  return events;
-}
-
 export default function CalendarPage() {
-  // Temporarily remove auth check to show calendar with mock data
-  // const { isSignedIn } = useAuth();
-  const isSignedIn = true; // Force signed in for development
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isSignedIn } = useAuth();
+  const router = useRouter();
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentView, setCurrentView] = useState<'month' | 'week' | 'day'>(
     'month',
   );
+  const [currentDate, setCurrentDate] = useState(new Date());
 
+  // Format current date for API call (YYYY-MM format)
+  const formatDateForAPI = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  };
+
+  const selectedMonth = formatDateForAPI(currentDate);
+  const myJournals = useGetUserJournals(selectedMonth);
+  const deleteJournalMutation = useDeleteJournal();
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+
+  // Update events when journal data changes
   useEffect(() => {
-    const fetchEntries = async () => {
-      setIsLoading(true);
-      try {
-        // Always use mock data for development since API may not exist yet
-        console.log('Loading mock data for calendar...');
-        const mockEvents = generateMockEvents();
-        console.log('Generated mock events:', mockEvents.length);
-        setEvents(mockEvents);
+    if (myJournals.data) {
+      const calendarEvents = myJournals.data.map((entry: JournalEntry) => ({
+        id: entry.id,
+        title: `${getMoodEmoji(entry.mood)} ${entry.title || 'Journal Entry'}`,
+        start: new Date(entry.createdAt),
+        end: new Date(entry.createdAt),
+        resource: entry,
+      }));
+      setEvents(calendarEvents);
+    }
+  }, [myJournals.data]);
 
-        // Uncomment below when API is ready
-        /*
-        if (isSignedIn) {
-          const response = await fetch('/api/journals');
-          if (response.ok) {
-            const entries = await response.json();
-            const calendarEvents = entries.map((entry: JournalEntry) => ({
-              id: entry.id,
-              title: `${getMoodEmoji(entry.mood)} ${
-                entry.title || 'Journal Entry'
-              }`,
-              start: new Date(entry.createdAt),
-              end: new Date(entry.createdAt),
-              resource: entry,
-            }));
-            setEvents(calendarEvents);
-          } else {
-            setEvents(generateMockEvents());
-          }
-        }
-        */
-      } catch (error) {
-        console.error('Error fetching entries:', error);
-        setEvents(generateMockEvents());
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchEntries();
-  }, []);
-
+  const isLoading = myJournals.isPending;
   const handleSelectEvent = (event: CalendarEvent) => {
     setSelectedEvent(event);
     setIsDialogOpen(true);
@@ -141,6 +91,105 @@ export default function CalendarPage() {
 
   const handleViewChange = (view: 'month' | 'week' | 'day') => {
     setCurrentView(view);
+  };
+
+  const handleNavigate = (newDate: Date) => {
+    setCurrentDate(newDate);
+    // Data will automatically refetch due to selectedMonth change
+  };
+
+  const handleNext = () => {
+    const today = new Date();
+    let nextDate: Date;
+
+    if (currentView === 'month') {
+      nextDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() + 1,
+        1,
+      );
+    } else if (currentView === 'week') {
+      nextDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+    } else {
+      nextDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+    }
+
+    // Only allow navigation if next date is not in the future
+    if (nextDate <= today) {
+      setCurrentDate(nextDate);
+    }
+  };
+
+  const handlePrevious = () => {
+    let previousDate: Date;
+
+    if (currentView === 'month') {
+      previousDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() - 1,
+        1,
+      );
+    } else if (currentView === 'week') {
+      previousDate = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+    } else {
+      previousDate = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000);
+    }
+
+    setCurrentDate(previousDate);
+  };
+
+  const handleToday = () => {
+    const today = new Date();
+    setCurrentDate(today);
+  };
+
+  const isNextDisabled = () => {
+    const today = new Date();
+    let nextDate: Date;
+
+    if (currentView === 'month') {
+      nextDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() + 1,
+        1,
+      );
+    } else if (currentView === 'week') {
+      nextDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+    } else {
+      nextDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+    }
+
+    return nextDate > today;
+  };
+
+  const handleViewFullEntry = (journalId: string) => {
+    // Navigate to write page with journal ID
+    router.push(`/write?edit=${journalId}`);
+    setIsDialogOpen(false);
+  };
+
+  const handleWriteFirstEntry = () => {
+    // Navigate to write page for new entry
+    router.push('/write');
+  };
+
+  const handleDeleteJournal = async (journalId: string) => {
+    if (
+      globalThis.confirm(
+        'Are you sure you want to delete this journal entry? This action cannot be undone.',
+      )
+    ) {
+      try {
+        await deleteJournalMutation.mutateAsync(journalId);
+        // Refresh the journals list for current month
+        myJournals.refetch();
+        // Close the dialog
+        setIsDialogOpen(false);
+      } catch (error) {
+        console.error('Failed to delete journal:', error);
+        alert('Failed to delete journal. Please try again.');
+      }
+    }
   };
 
   const eventStyleGetter = (event: CalendarEvent) => {
@@ -172,7 +221,9 @@ export default function CalendarPage() {
                 Please sign in to view your journal calendar.
               </p>
             </div>
-            <Button>Sign In</Button>
+            <SignInButton>
+              <Button>Sign In</Button>
+            </SignInButton>
           </CardContent>
         </Card>
       </div>
@@ -200,6 +251,9 @@ export default function CalendarPage() {
               <div className="bg-primary h-3 w-3 rounded-full"></div>
               Your Journal Calendar
             </CardTitle>
+            <Button variant="default" size="sm" onClick={handleWriteFirstEntry}>
+              Create Journal
+            </Button>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -209,26 +263,97 @@ export default function CalendarPage() {
                   <div className="bg-muted mx-auto h-64 w-full animate-pulse rounded"></div>
                 </div>
               </div>
-            ) : (
-              <div className="h-[500px]">
-                <Calendar
-                  localizer={localizer}
-                  events={events}
-                  startAccessor="start"
-                  endAccessor="end"
-                  onSelectEvent={handleSelectEvent}
-                  onView={view =>
-                    handleViewChange(view as 'month' | 'week' | 'day')
-                  }
-                  defaultDate={new Date()}
-                  view={currentView}
-                  eventPropGetter={eventStyleGetter}
-                  popup
-                  views={['month', 'week', 'day']}
-                  className="rbc-calendar-custom"
-                  style={{ height: '100%' }}
-                />
+            ) : myJournals.isError ? (
+              <div className="flex h-96 items-center justify-center">
+                <div className="space-y-4 text-center">
+                  <FileText className="text-muted-foreground mx-auto h-12 w-12" />
+                  <div>
+                    <h3 className="text-lg font-semibold">
+                      Failed to load journals
+                    </h3>
+                    <p className="text-muted-foreground">
+                      {myJournals.error?.message ||
+                        'Please try refreshing the page'}
+                    </p>
+                  </div>
+                  <Button onClick={() => myJournals.refetch()}>
+                    Try Again
+                  </Button>
+                </div>
               </div>
+            ) : (
+              <>
+                <div className="h-[500px]">
+                  <Calendar
+                    localizer={localizer}
+                    events={events || []}
+                    startAccessor="start"
+                    endAccessor="end"
+                    onSelectEvent={handleSelectEvent}
+                    onView={view =>
+                      handleViewChange(view as 'month' | 'week' | 'day')
+                    }
+                    onNavigate={handleNavigate}
+                    date={currentDate}
+                    view={currentView}
+                    eventPropGetter={eventStyleGetter}
+                    popup
+                    views={['month', 'week', 'day']}
+                    className="rbc-calendar-custom"
+                    style={{ height: '100%' }}
+                    showMultiDayTimes
+                    step={60}
+                    timeslots={1}
+                    components={{
+                      toolbar: (props: any) => (
+                        <div className="rbc-toolbar">
+                          <span className="rbc-btn-group">
+                            <button
+                              type="button"
+                              onClick={handleToday}
+                              className="rbc-button-link"
+                            >
+                              Today
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handlePrevious}
+                              className="rbc-button-link"
+                            >
+                              ‹
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleNext}
+                              disabled={isNextDisabled()}
+                              className="rbc-button-link"
+                            >
+                              ›
+                            </button>
+                          </span>
+                          <span className="rbc-toolbar-label">
+                            {props.label}
+                          </span>
+                          <span className="rbc-btn-group">
+                            {props.views.map((name: string) => (
+                              <button
+                                key={name}
+                                type="button"
+                                className={
+                                  props.view === name ? 'rbc-active' : ''
+                                }
+                                onClick={() => props.onView(name)}
+                              >
+                                {name.charAt(0).toUpperCase() + name.slice(1)}
+                              </button>
+                            ))}
+                          </span>
+                        </div>
+                      ),
+                    }}
+                  />
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -266,8 +391,9 @@ export default function CalendarPage() {
       {/* Entry Detail Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
+          <DialogTitle></DialogTitle>
           <DialogHeader>
-            <Card>
+            <Card className="pl-4">
               Journal Entry -{' '}
               {selectedEvent && format(selectedEvent.start, 'MMMM d, yyyy')}
             </Card>
@@ -321,11 +447,34 @@ export default function CalendarPage() {
                   <div className="border-border/50 flex items-center justify-between border-t pt-2">
                     <div className="text-muted-foreground flex items-center gap-1 text-xs">
                       <FileText className="h-3 w-3" />
-                      {selectedEvent.resource.wordCount} words
+                      {selectedEvent.resource.wordCount || 0} words
                     </div>
-                    <Button size="sm" variant="outline">
-                      View Full Entry
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        className="cursor-pointer"
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          handleViewFullEntry(selectedEvent.resource.id)
+                        }
+                      >
+                        View Full Entry
+                      </Button>
+                      <Button
+                        className="cursor-pointer"
+                        size="sm"
+                        variant="destructive"
+                        onClick={() =>
+                          handleDeleteJournal(selectedEvent.resource.id)
+                        }
+                        disabled={deleteJournalMutation.isPending}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        {deleteJournalMutation.isPending
+                          ? 'Deleting...'
+                          : 'Delete'}
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

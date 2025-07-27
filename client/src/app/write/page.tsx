@@ -2,7 +2,8 @@
 
 import { SignInButton, useAuth } from '@clerk/nextjs';
 import { Brain, Loader2, LogIn, Save } from 'lucide-react';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import { AIAnalysisCard } from '@/components/journal/ai-analysis-card';
 import { JournalEditor } from '@/components/journal/journal-editor';
@@ -12,8 +13,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   useAnalyzeJournal,
+  useGetJournalById,
   usePDFExtract,
   useSaveJournal,
+  useUpdateJournal,
 } from '@/hooks/use-journal-api';
 
 interface AIAnalysis {
@@ -24,36 +27,84 @@ interface AIAnalysis {
 
 export default function WritePage() {
   const { isSignedIn } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const editJournalId = searchParams.get('edit');
+
   const [journalText, setJournalText] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [existingAnalysis, setExistingAnalysis] = useState<AIAnalysis>();
 
   const analyzeJournalMutation = useAnalyzeJournal();
-
   const saveJournalMutation = useSaveJournal();
+  const updateJournalMutation = useUpdateJournal();
   const pdfExtractMutation = usePDFExtract();
+
+  // Fetch journal data if editing
+  const existingJournal = useGetJournalById(editJournalId);
+
+  // Load existing journal data when editing
+  useEffect(() => {
+    if (editJournalId && existingJournal.data && !isEditMode) {
+      setJournalText(existingJournal.data.content || '');
+      setIsEditMode(true);
+
+      // Pre-populate analysis with existing data instead of calling API
+      if (existingJournal.data.mood && existingJournal.data.summary) {
+        // Create analysis data structure to match the API response
+        const analysisData = {
+          mood: existingJournal.data.mood,
+          summary: existingJournal.data.summary,
+          reason:
+            existingJournal.data.reason || 'Previously analyzed journal entry',
+        };
+
+        setExistingAnalysis(analysisData);
+      }
+    }
+  }, [editJournalId, existingJournal.data, isEditMode]);
 
   const handleAnalyzeWithAI = async () => {
     if (!journalText.trim()) return;
 
     try {
-      await analyzeJournalMutation.mutateAsync({ text: journalText });
+      const result = await analyzeJournalMutation.mutateAsync({
+        text: journalText,
+      });
+      // Clear existing analysis when new analysis is completed
+      // This ensures the new analysis takes priority
+      if (result && isEditMode) {
+        setExistingAnalysis(undefined);
+      }
     } catch (error) {
       console.error('Error analyzing journal:', error);
     }
   };
 
   const handleSaveJournal = async () => {
-    if (!isSignedIn || !journalText.trim() || !analyzeJournalMutation.data) {
+    // Prioritize new analysis over existing analysis
+    const analysisData = analyzeJournalMutation.data?.data || existingAnalysis;
+
+    if (!isSignedIn || !journalText.trim() || !analysisData) {
       return;
     }
 
     try {
-      await saveJournalMutation.mutateAsync({
-        text: journalText,
-        mood: analyzeJournalMutation.data.data.mood,
-        summary: analyzeJournalMutation.data.data.summary,
-        reason: analyzeJournalMutation.data.data.reason,
-      });
+      await (isEditMode && editJournalId
+        ? updateJournalMutation.mutateAsync({
+            id: editJournalId,
+            text: journalText,
+            mood: analysisData.mood,
+            summary: analysisData.summary,
+            reason: analysisData.reason,
+          })
+        : saveJournalMutation.mutateAsync({
+            text: journalText,
+            mood: analysisData.mood,
+            summary: analysisData.summary,
+            reason: analysisData.reason,
+          }));
 
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
@@ -73,16 +124,54 @@ export default function WritePage() {
     }
   };
 
+  // Show loading state when fetching existing journal
+  if (editJournalId && existingJournal.isPending) {
+    return (
+      <div className="container mx-auto max-w-4xl px-4 py-8">
+        <div className="flex h-96 items-center justify-center">
+          <div className="space-y-4 text-center">
+            <Loader2 className="text-muted-foreground mx-auto h-8 w-8 animate-spin" />
+            <p className="text-muted-foreground">Loading journal entry...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if journal not found
+  if (editJournalId && existingJournal.isError) {
+    return (
+      <div className="container mx-auto max-w-4xl px-4 py-8">
+        <Card>
+          <CardContent className="space-y-4 pt-6 text-center">
+            <div>
+              <h2 className="text-xl font-semibold">Journal not found</h2>
+              <p className="text-muted-foreground">
+                The journal entry you&apos;re looking for doesn&apos;t exist or
+                you don&apos;t have access to it.
+              </p>
+            </div>
+            <Button onClick={() => router.push('/calendar')}>
+              Back to Calendar
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
       <div className="space-y-6">
         {/* Header */}
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold tracking-tight">
-            Write Your Journal
+            {isEditMode ? 'Edit Your Journal' : 'Write Your Journal'}
           </h1>
           <p className="text-muted-foreground">
-            Express your thoughts and let AI help you understand your emotions
+            {isEditMode
+              ? 'Update your thoughts and analysis'
+              : 'Express your thoughts and let AI help you understand your emotions'}
           </p>
         </div>
 
@@ -98,6 +187,15 @@ export default function WritePage() {
           </CardContent>
         </Card> */}
 
+        {/* Back to Calendar button when editing */}
+        {isEditMode && (
+          <div className="flex justify-start">
+            <Button variant="outline" onClick={() => router.push('/calendar')}>
+              ← Back to Calendar
+            </Button>
+          </div>
+        )}
+
         {/* Journal Editor */}
         <Card>
           <CardHeader>
@@ -110,49 +208,94 @@ export default function WritePage() {
               placeholder="Write your journal entry here..."
             />
 
-            {/* Analyze Button */}
-            <div className="mt-4 flex justify-center">
-              <Button
-                onClick={handleAnalyzeWithAI}
-                disabled={
-                  !journalText.trim() || analyzeJournalMutation.isPending
-                }
-                className="w-full max-w-xs"
-              >
-                {analyzeJournalMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <Brain className="mr-2 h-4 w-4" />
-                    💡 Analyze with AI
-                  </>
-                )}
-              </Button>
-            </div>
+            {/* Analyze Button - Only show if not in edit mode */}
+            {!isEditMode && (
+              <div className="mt-4 flex justify-center">
+                <Button
+                  onClick={handleAnalyzeWithAI}
+                  disabled={
+                    !journalText.trim() || analyzeJournalMutation.isPending
+                  }
+                  className="w-full max-w-xs"
+                >
+                  {analyzeJournalMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="mr-2 h-4 w-4" />
+                      💡 Analyze with AI
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+
+            {/* Analyze/Re-analyze Button for edit mode */}
+            {isEditMode && (
+              <div className="mt-4 flex justify-center">
+                <Button
+                  onClick={handleAnalyzeWithAI}
+                  disabled={
+                    !journalText.trim() || analyzeJournalMutation.isPending
+                  }
+                  variant={existingAnalysis ? 'outline' : 'default'}
+                  className="w-full max-w-xs"
+                >
+                  {analyzeJournalMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {existingAnalysis ? 'Re-analyzing...' : 'Analyzing...'}
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="mr-2 h-4 w-4" />
+                      {existingAnalysis
+                        ? '🔄 Re-analyze with AI'
+                        : '💡 Analyze with AI'}
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* AI Analysis Results */}
-        {analyzeJournalMutation.data && (
+        {(analyzeJournalMutation.data || existingAnalysis) && (
           <AIAnalysisCard
-            mood={analyzeJournalMutation.data.data.mood}
-            summary={analyzeJournalMutation.data.data.summary}
-            reason={analyzeJournalMutation.data.data.reason}
+            mood={
+              analyzeJournalMutation.data?.data.mood ||
+              existingAnalysis?.mood ||
+              ''
+            }
+            summary={
+              analyzeJournalMutation.data?.data.summary ||
+              existingAnalysis?.summary ||
+              ''
+            }
+            reason={
+              analyzeJournalMutation.data?.data.reason ||
+              existingAnalysis?.reason ||
+              ''
+            }
           />
         )}
 
         {/* Save Section */}
-        {analyzeJournalMutation.data && (
+        {(analyzeJournalMutation.data || existingAnalysis) && (
           <Card>
             <CardContent className="pt-1">
               {isSignedIn ? (
                 <div className="space-y-4 text-center">
                   <SaveJournalButton
                     handleSaveJournal={handleSaveJournal}
-                    isSaving={saveJournalMutation.isPending}
+                    isSaving={
+                      saveJournalMutation.isPending ||
+                      updateJournalMutation.isPending
+                    }
                     saveSuccess={saveSuccess}
                   />
                   {saveSuccess && (
