@@ -16,7 +16,12 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <Button variant="outline" size="sm" className="h-9 w-9 p-0">
+      <Button
+        data-testid="theme-toggle-loading"
+        variant="outline"
+        size="sm"
+        className="h-9 w-9 p-0"
+      >
         <div className="h-4 w-4" />
       </Button>
     );
@@ -24,6 +29,7 @@ export function ThemeToggle() {
 
   return (
     <Button
+      data-testid="theme-toggle"
       variant="outline"
       size="sm"
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

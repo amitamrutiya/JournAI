@@ -33,7 +33,11 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="bg-muted/30 relative py-16 md:py-20">
+    <section
+      id="features"
+      data-testid="features-section"
+      className="bg-muted/30 relative py-16 md:py-20"
+    >
       {/* Background Pattern */}
       <div className="from-chart-1/3 to-chart-2/3 absolute inset-0 bg-gradient-to-br via-transparent opacity-50" />
 
@@ -44,7 +48,10 @@ export function FeaturesSection() {
             <span>Powerful Features</span>
           </div>
 
-          <h2 className="text-foreground mt-4 mb-4 text-3xl font-bold md:text-4xl">
+          <h2
+            data-testid="features-title"
+            className="text-foreground mt-4 mb-4 text-3xl font-bold md:text-4xl"
+          >
             Everything You Need for Better Self-Reflection
           </h2>
 
@@ -54,10 +61,14 @@ export function FeaturesSection() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div
+          data-testid="features-grid"
+          className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
+        >
           {features.map(feature => (
             <Card
               key={feature.title}
+              data-testid={`feature-card-${feature.title.toLowerCase().replaceAll(/\s+/g, '-')}`}
               className={`bg-card border p-6 shadow-lg transition-all hover:scale-105 hover:shadow-xl ${feature.bgColor}`}
             >
               <CardHeader className="pb-4">

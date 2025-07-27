@@ -20,21 +20,28 @@ const getCalendarDayClasses = (isToday: boolean, hasEntry: boolean): string => {
 
 export function HeroSection() {
   return (
-    <section id="hero" className="bg-background relative py-16 md:py-24">
+    <section
+      id="hero"
+      data-testid="hero-section"
+      className="bg-background relative py-16 md:py-24"
+    >
       {/* Background Pattern */}
       <div className="from-primary/5 to-secondary/5 absolute inset-0 bg-gradient-to-br via-transparent" />
 
       <div className="relative container mx-auto px-4">
         <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-16">
           {/* Left Content */}
-          <div className="space-y-8">
+          <div data-testid="hero-content" className="space-y-8">
             <div className="space-y-6">
               <div className="bg-secondary text-secondary-foreground inline-flex items-center rounded-full border px-3 py-1 text-sm">
                 <span className="mr-2">✨</span>
                 <span>AI-Powered Journaling</span>
               </div>
 
-              <h1 className="text-foreground text-5xl leading-[1.1] font-bold tracking-tight md:text-6xl lg:text-7xl xl:text-6xl">
+              <h1
+                data-testid="hero-title"
+                className="text-foreground text-5xl leading-[1.1] font-bold tracking-tight md:text-6xl lg:text-7xl xl:text-6xl"
+              >
                 Reflect Better.{' '}
                 <span className="relative">
                   <span className="from-primary via-chart-1 to-chart-2 bg-gradient-to-r bg-clip-text text-transparent">
@@ -45,7 +52,10 @@ export function HeroSection() {
                 Let AI Understand You.
               </h1>
 
-              <p className="text-muted-foreground max-w-xl text-xl md:text-2xl lg:text-2xl">
+              <p
+                data-testid="hero-description"
+                className="text-muted-foreground max-w-xl text-xl md:text-2xl lg:text-2xl"
+              >
                 JournAI helps you journal daily, detect your mood, and track
                 your emotional journey with AI insights.
               </p>
@@ -53,6 +63,7 @@ export function HeroSection() {
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button
+                data-testid="start-journaling-button"
                 size="lg"
                 className="group bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 text-lg transition-all hover:scale-105"
               >
@@ -62,6 +73,7 @@ export function HeroSection() {
                 </span>
               </Button>
               <Button
+                data-testid="how-it-works-button"
                 variant="outline"
                 size="lg"
                 className="border-border text-foreground hover:bg-accent hover:text-accent-foreground px-8 py-3 text-lg transition-all hover:scale-105"

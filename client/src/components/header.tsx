@@ -16,10 +16,13 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
+    <header
+      data-testid="header"
+      className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur"
+    >
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
-        <div className="flex items-center space-x-2">
+        <div data-testid="logo" className="flex items-center space-x-2">
           <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-lg">
             <span className="text-sm font-bold">J</span>
           </div>
@@ -27,11 +30,15 @@ export function Header() {
         </div>
 
         {/* Desktop Auth + Theme Toggle */}
-        <div className="hidden items-center space-x-3 md:flex">
+        <div
+          data-testid="desktop-auth-menu"
+          className="hidden items-center space-x-3 md:flex"
+        >
           <ThemeToggle />
           <SignedOut>
             <SignInButton>
               <Button
+                data-testid="desktop-sign-in-button"
                 variant="outline"
                 size="sm"
                 className="text-foreground hover:bg-accent hover:text-accent-foreground"
@@ -41,6 +48,7 @@ export function Header() {
             </SignInButton>
             <SignUpButton>
               <Button
+                data-testid="desktop-sign-up-button"
                 size="sm"
                 className="text-primary-foreground hover:bg-primary/90 bg-primary px-4 py-2"
               >
@@ -54,12 +62,16 @@ export function Header() {
         </div>
 
         {/* Mobile Menu Button + Theme Toggle */}
-        <div className="flex items-center space-x-2 md:hidden">
+        <div
+          data-testid="mobile-menu-toggle"
+          className="flex items-center space-x-2 md:hidden"
+        >
           <ThemeToggle />
           <SignedIn>
             <UserButton />
           </SignedIn>
           <Button
+            data-testid="mobile-menu-button"
             variant="outline"
             size="sm"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -93,13 +105,17 @@ export function Header() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="bg-background border-t md:hidden">
+        <div
+          data-testid="mobile-menu"
+          className="bg-background border-t md:hidden"
+        >
           <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col space-y-4">
               <SignedOut>
                 <div className="flex gap-2 pt-2">
                   <SignInButton>
                     <Button
+                      data-testid="mobile-sign-in-button"
                       variant="outline"
                       size="sm"
                       className="text-foreground hover:bg-accent hover:text-accent-foreground flex-1"
@@ -109,6 +125,7 @@ export function Header() {
                   </SignInButton>
                   <SignUpButton>
                     <Button
+                      data-testid="mobile-sign-up-button"
                       size="sm"
                       className="text-primary-foreground hover:bg-primary/90 bg-primary flex-1"
                     >
