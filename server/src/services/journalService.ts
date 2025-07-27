@@ -133,26 +133,72 @@ export class JournalService {
    */
   static async getUserJournals(
     userId: string,
-    limit: number = 10,
-    offset: number = 0
+    limit: number = 31,
+    offset: number = 0,
+    selectedMonth?: string
   ): Promise<any[]> {
     try {
-      log.debug(`Fetching journals for user: ${userId}`);
+      log.debug(
+        `Fetching journals for user: ${userId}${
+          selectedMonth ? ` for month: ${selectedMonth}` : ""
+        }`
+      );
+
+      let whereClause: any = { userId };
+
+      // If selectedMonth is provided, filter by month and year
+      if (selectedMonth) {
+        const [year, month] = selectedMonth.split("-");
+        const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+        const endDate = new Date(
+          parseInt(year),
+          parseInt(month),
+          0,
+          23,
+          59,
+          59,
+          999
+        );
+
+        whereClause.createdAt = {
+          gte: startDate,
+          lte: endDate,
+        };
+      }
 
       const journals = await db.journal.findMany({
-        where: { userId },
+        where: whereClause,
         orderBy: { createdAt: "desc" },
         take: limit,
         skip: offset,
       });
 
-      log.info(`Retrieved ${journals.length} journals for user: ${userId}`);
-      return journals;
+      // Transform the journals to include necessary fields for the calendar
+      const transformedJournals = journals.map((journal) => {
+        const content = journal.content as any;
+        return {
+          id: journal.id,
+          title: journal.title,
+          content: content?.text || "",
+          mood: journal.mood.toLowerCase(),
+          summary: journal.summary,
+          reason: content?.analysis?.reason || "", // Add reason from content analysis
+          createdAt: journal.createdAt.toISOString(),
+          wordCount: content?.metadata?.wordCount || 0,
+        };
+      });
+
+      log.info(
+        `Retrieved ${journals.length} journals for user: ${userId}${
+          selectedMonth ? ` for month: ${selectedMonth}` : ""
+        }`
+      );
+      return transformedJournals;
     } catch (error) {
       log.error(
         "Failed to fetch user journals",
         error instanceof Error ? error : new Error(String(error)),
-        { userId }
+        { userId, selectedMonth }
       );
       throw error;
     }
@@ -176,11 +222,102 @@ export class JournalService {
         throw new Error(`Journal not found: ${journalId}`);
       }
 
+      // Transform the journal to include necessary fields (same format as getUserJournals)
+      const content = journal.content as any;
+      const transformedJournal = {
+        id: journal.id,
+        title: journal.title,
+        content: content?.text || "",
+        mood: journal.mood.toLowerCase(),
+        summary: journal.summary,
+        reason: content?.analysis?.reason || "", // Add reason from content analysis
+        createdAt: journal.createdAt.toISOString(),
+        wordCount: content?.metadata?.wordCount || 0,
+      };
+
       log.info(`Retrieved journal: ${journalId}`);
-      return journal;
+      return transformedJournal;
     } catch (error) {
       log.error(
         "Failed to fetch journal",
+        error instanceof Error ? error : new Error(String(error)),
+        { journalId, userId }
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Update a journal entry
+   */
+  static async updateJournal(
+    journalId: string,
+    userId: string,
+    journalData: {
+      text: string;
+      mood: string;
+      summary: string;
+      reason: string;
+    }
+  ): Promise<any> {
+    try {
+      log.debug(`Updating journal: ${journalId} for user: ${userId}`);
+
+      // Check if journal exists and belongs to user
+      const existingJournal = await db.journal.findFirst({
+        where: {
+          id: journalId,
+          userId,
+        },
+      });
+
+      if (!existingJournal) {
+        throw new Error(`Journal not found: ${journalId}`);
+      }
+
+      // Generate title if the text changed
+      const title = this._generateTitle(journalData.text);
+
+      // Convert mood to enum
+      const moodEnum = this._mapMoodToEnum(journalData.mood);
+
+      // Prepare updated content as JSON
+      const content = {
+        text: journalData.text,
+        analysis: {
+          mood: journalData.mood,
+          summary: journalData.summary,
+          reason: journalData.reason,
+        },
+        metadata: {
+          wordCount: journalData.text.trim().split(/\s+/).length,
+          characterCount: journalData.text.length,
+          updatedAt: new Date().toISOString(),
+        },
+      };
+
+      // Update journal entry
+      const updatedJournal = await db.journal.update({
+        where: { id: journalId },
+        data: {
+          title,
+          content,
+          mood: moodEnum,
+          summary: journalData.summary,
+          updatedAt: new Date(),
+        },
+      });
+
+      log.info(`Journal updated successfully: ${journalId}`, {
+        userId,
+        mood: journalData.mood,
+        textLength: journalData.text.length,
+      });
+
+      return updatedJournal;
+    } catch (error) {
+      log.error(
+        "Failed to update journal",
         error instanceof Error ? error : new Error(String(error)),
         { journalId, userId }
       );
