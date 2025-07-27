@@ -3,7 +3,6 @@
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './calendar.css';
 
-import { useAuth } from '@clerk/nextjs';
 import { format } from 'date-fns';
 import { CalendarDays, Clock, FileText } from 'lucide-react';
 import moment from 'moment';
@@ -13,12 +12,8 @@ import { Calendar, momentLocalizer } from 'react-big-calendar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
+import { MOODS } from '@/lib/utils';
 
 interface JournalEntry {
   id: string;
@@ -40,39 +35,13 @@ interface CalendarEvent {
 
 const localizer = momentLocalizer(moment);
 
-const MOOD_EMOJIS = {
-  happy: '😊',
-  sad: '😢',
-  anxious: '😰',
-  excited: '🤩',
-  angry: '😠',
-  calm: '😌',
-  neutral: '😐',
-  grateful: '🙏',
-  frustrated: '😤',
-  content: '😌',
-};
-
-const MOOD_COLORS = {
-  happy: '#10B981',
-  sad: '#3B82F6',
-  anxious: '#F59E0B',
-  excited: '#8B5CF6',
-  angry: '#EF4444',
-  calm: '#6366F1',
-  neutral: '#6B7280',
-  grateful: '#059669',
-  frustrated: '#EA580C',
-  content: '#0D9488',
-};
-
 const getMoodEmoji = (mood: string) => {
-  return MOOD_EMOJIS[mood as keyof typeof MOOD_EMOJIS] || '📝';
+  return MOODS[mood as keyof typeof MOODS]?.emoji || '📝';
 };
 
 function generateMockEvents(): CalendarEvent[] {
   const events: CalendarEvent[] = [];
-  const moods = Object.keys(MOOD_EMOJIS);
+  const moods = Object.keys(MOODS);
 
   // Generate events for the last 30 days
   for (let index = 0; index < 30; index++) {
@@ -177,7 +146,7 @@ export default function CalendarPage() {
   const eventStyleGetter = (event: CalendarEvent) => {
     const mood = event.resource.mood;
     const backgroundColor =
-      MOOD_COLORS[mood as keyof typeof MOOD_COLORS] || MOOD_COLORS.neutral;
+      MOODS[mood as keyof typeof MOODS]?.color || MOODS.neutral.color;
 
     return {
       style: {
@@ -274,13 +243,14 @@ export default function CalendarPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3 md:grid-cols-5">
-              {Object.entries(MOOD_EMOJIS).map(([mood, emoji]) => (
+              {Object.entries(MOODS).map(([mood, { emoji }]) => (
                 <div key={mood} className="flex items-center gap-2">
                   <div
                     className="h-4 w-4 rounded-full"
                     style={{
                       backgroundColor:
-                        MOOD_COLORS[mood as keyof typeof MOOD_COLORS],
+                        MOODS[mood as keyof typeof MOODS]?.color ||
+                        MOODS.neutral.color,
                     }}
                   ></div>
                   <span>
@@ -297,10 +267,10 @@ export default function CalendarPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
+            <Card>
               Journal Entry -{' '}
               {selectedEvent && format(selectedEvent.start, 'MMMM d, yyyy')}
-            </DialogTitle>
+            </Card>
           </DialogHeader>
 
           {selectedEvent && (
@@ -318,15 +288,9 @@ export default function CalendarPage() {
                         className={`rounded-full px-3 py-1`}
                         style={{
                           backgroundColor:
-                            MOOD_COLORS[
-                              selectedEvent.resource
-                                .mood as keyof typeof MOOD_COLORS
-                            ] + '20',
-                          color:
-                            MOOD_COLORS[
-                              selectedEvent.resource
-                                .mood as keyof typeof MOOD_COLORS
-                            ],
+                            MOODS[
+                              selectedEvent.resource.mood as keyof typeof MOODS
+                            ].color + '20',
                         }}
                       >
                         {selectedEvent.resource.mood}

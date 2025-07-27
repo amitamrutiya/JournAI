@@ -2,12 +2,15 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-
-const moodEmojis = ['😊', '😌', '🤔', '😴', '😍', '🙂', '😑', '🤗', '😋', '🥳'];
+import { MOODS } from '@/lib/utils';
 
 const getMoodEmojiForDay = (day: number): string => {
   // Use day number to deterministically pick an emoji
-  return moodEmojis[day % moodEmojis.length];
+  return (
+    MOODS[
+      Object.keys(MOODS)[day % Object.keys(MOODS).length] as keyof typeof MOODS
+    ]?.emoji || '😐'
+  );
 };
 
 const getCalendarDayClasses = (isToday: boolean, hasEntry: boolean): string => {

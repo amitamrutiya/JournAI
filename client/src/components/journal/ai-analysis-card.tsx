@@ -2,6 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MOODS } from '@/lib/utils';
 
 interface AIAnalysisCardProps {
   mood: string;
@@ -11,21 +12,11 @@ interface AIAnalysisCardProps {
 
 const getMoodEmoji = (mood: string): string => {
   const moodLower = mood.toLowerCase();
-  if (moodLower.includes('happy') || moodLower.includes('joy')) return '😊';
-  if (moodLower.includes('sad') || moodLower.includes('down')) return '😢';
-  if (moodLower.includes('angry') || moodLower.includes('mad')) return '😠';
-  if (moodLower.includes('anxious') || moodLower.includes('worry')) return '😰';
-  if (moodLower.includes('excited') || moodLower.includes('energetic'))
-    return '🤩';
-  if (moodLower.includes('calm') || moodLower.includes('peaceful')) return '😌';
-  if (moodLower.includes('frustrated')) return '😤';
-  if (moodLower.includes('content')) return '😊';
-  if (moodLower.includes('confused')) return '😕';
-  if (moodLower.includes('grateful')) return '🙏';
-  return '🎭'; // Default emoji for mood
+  return MOODS[moodLower as keyof typeof MOODS]?.emoji || '😐';
 };
 
 export function AIAnalysisCard({ mood, summary, reason }: AIAnalysisCardProps) {
+  console.log('AI Analysis Card Props:', { mood, summary, reason });
   const moodEmoji = getMoodEmoji(mood);
 
   return (
