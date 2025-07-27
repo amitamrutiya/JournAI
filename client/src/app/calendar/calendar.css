@@ -1,0 +1,25 @@
+.rbc-calendar-custom .rbc-toolbar button {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.rbc-calendar-custom .rbc-header {
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  font-weight: 600;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+}
+
+.rbc-calendar-custom .rbc-off-range-bg {
+  background: hsl(var(--muted) / 0.3);
+}
+
+.rbc-calendar-custom .rbc-today {
+  background: hsl(var(--primary) / 0.1);
+}

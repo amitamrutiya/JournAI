@@ -7,6 +7,7 @@ import {
   SignUpButton,
   UserButton,
 } from '@clerk/nextjs';
+import Link from 'next/link';
 import { useState } from 'react';
 
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -22,12 +23,38 @@ export function Header() {
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
-        <div data-testid="logo" className="flex items-center space-x-2">
+        <Link
+          data-testid="logo"
+          className="flex cursor-pointer items-center space-x-2"
+          href={'/'}
+        >
           <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-lg">
             <span className="text-sm font-bold">J</span>
           </div>
           <h1 className="text-foreground text-xl font-bold">JournAI</h1>
-        </div>
+        </Link>
+
+        {/* Navigation Links */}
+        <nav className="hidden items-center space-x-6 md:flex">
+          <Link
+            href="/write"
+            className="text-foreground/80 hover:text-foreground transition-colors"
+          >
+            ✍️ Write
+          </Link>
+          <Link
+            href="/calendar"
+            className="text-foreground/80 hover:text-foreground transition-colors"
+          >
+            📅 Calendar
+          </Link>
+          <Link
+            href="/insights"
+            className="text-foreground/80 hover:text-foreground transition-colors"
+          >
+            📊 Insights
+          </Link>
+        </nav>
 
         {/* Desktop Auth + Theme Toggle */}
         <div
