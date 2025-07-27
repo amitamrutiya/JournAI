@@ -568,4 +568,56 @@ router.delete("/api/delete-journal/:id", requireAuth(), async (req, res) => {
   }
 });
 
+// Get journal insights and analytics
+router.get("/api/journals/insights", requireAuth(), async (req, res) => {
+  const { userId } = getAuth(req);
+  if (!userId) {
+    log.warn("Unauthorized access attempt to get journal insights");
+    return sendError(res, "User authentication required", 401);
+  }
+
+  try {
+    const { range, mood } = req.query;
+    const timeRange = (range as string) || "month";
+    const moodFilter = mood as string;
+
+    log.info("Fetching journal insights", {
+      userId,
+      timeRange,
+      moodFilter: moodFilter || "none",
+    });
+
+    // Get insights using JournalService
+    const insights = await JournalService.getJournalInsights(
+      userId,
+      timeRange,
+      moodFilter
+    );
+
+    log.info("Journal insights retrieved successfully", {
+      userId,
+      totalEntries: insights.totalEntries,
+      timeRange,
+    });
+
+    return sendSuccess(
+      res,
+      insights,
+      "Journal insights retrieved successfully"
+    );
+  } catch (error) {
+    log.error(
+      "Error fetching journal insights",
+      error instanceof Error ? error : new Error(String(error)),
+      { userId }
+    );
+    return sendError(
+      res,
+      "Failed to fetch journal insights",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
+    );
+  }
+});
+
 export default router;

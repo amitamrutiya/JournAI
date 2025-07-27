@@ -17,4 +17,5 @@ export const QUERY_CONFIG = {
 export const QUERY_KEYS = {
   userJournals: ['user-journals'] as const,
   journalById: (id: string) => ['journal', id] as const,
+  journalInsights: ['journal-insights'] as const,
 } as const;

@@ -78,17 +78,19 @@ TASK:
 RESPONSE FORMAT:
 Respond ONLY with a valid JSON object in this exact format:
 {
-  "mood": "[one of the following: happy, sad, anxious, excited, angry, peaceful, grateful, frustrated, worried, content]",
+  "mood": "[one of the following: happy, sad, anxious, excited, angry, peaceful, grateful, frustrated, worried, content, neutral, tired]",
   "summary": "[one-line summary of the day/experience in 15–30 words]",
   "reason": "[brief explanation citing specific phrases or emotional indicators from the journal entry]"
 }
 
 IMPORTANT INSTRUCTIONS:
-- The mood **must be one of these EXACT values**: happy, sad, anxious, excited, angry, peaceful, grateful, frustrated, worried, content.
+- The mood **must be one of these EXACT values**: happy, sad, anxious, excited, angry, peaceful, grateful, frustrated, worried, content, neutral, tired.
 - Do not invent or choose any mood word outside of this list.
 - Only include the JSON object in your response.
 - The summary should be concise and reflect the emotional tone of the entry.
 - The reason must clearly reference emotional signals or language from the journal.
+- Use "neutral" for entries that don't express strong emotions or are matter-of-fact.
+- Use "tired" for entries expressing physical or mental exhaustion, fatigue, or feeling drained.
 
 Respond with **only the JSON**, and nothing else.
 `;
