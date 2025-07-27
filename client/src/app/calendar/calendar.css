@@ -23,3 +23,18 @@
 .rbc-calendar-custom .rbc-today {
   background: hsl(var(--primary) / 0.1);
 }
+
+.rbc-button-link {
+  color: hsl(var(--primary));
+  background-color: transparent;
+  text-decoration: none;
+}
+
+.rbc-button-link:hover {
+  color: hsl(var(--primary) / 0.8);
+}
+
+.rbc-overlay {
+  background: hsl(var(--muted-foreground));
+  color: hsl(var(--foreground));
+}

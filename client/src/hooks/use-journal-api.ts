@@ -1,5 +1,7 @@
 import { useAuth } from '@clerk/nextjs';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
+
+import { QUERY_CONFIG, QUERY_KEYS } from '@/lib/query-config';
 
 const SERVER_URL =
   process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:8000';
@@ -105,6 +107,130 @@ export function usePDFExtract() {
       }
 
       return response.json();
+    },
+  });
+}
+
+export function useGetUserJournals(selectedMonth?: string) {
+  const { getToken, isSignedIn } = useAuth();
+
+  return useQuery({
+    queryKey: [...QUERY_KEYS.userJournals, selectedMonth],
+    queryFn: async () => {
+      const token = await getToken();
+
+      // Build URL with optional month parameter
+      const url = new URL(`${SERVER_URL}/api/get-user-journal`);
+      if (selectedMonth) {
+        url.searchParams.append('month', selectedMonth);
+      }
+
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch journals');
+      }
+
+      const result = await response.json();
+      return result.data || result; // Handle both wrapped and unwrapped responses
+    },
+    enabled: !!isSignedIn, // Only run query when user is signed in
+    staleTime: QUERY_CONFIG.staleTime,
+    gcTime: QUERY_CONFIG.gcTime,
+    retry: QUERY_CONFIG.retry,
+    refetchOnWindowFocus: QUERY_CONFIG.refetchOnWindowFocus,
+  });
+}
+
+export function useGetJournalById(journalId: string | null) {
+  const { getToken, isSignedIn } = useAuth();
+
+  return useQuery({
+    queryKey: QUERY_KEYS.journalById(journalId || ''),
+    queryFn: async () => {
+      const token = await getToken();
+
+      const response = await fetch(`${SERVER_URL}/api/journal/${journalId}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch journal');
+      }
+
+      const result = await response.json();
+      return result.data || result;
+    },
+    enabled: !!isSignedIn && !!journalId, // Only run when user is signed in and journalId exists
+    staleTime: QUERY_CONFIG.staleTime,
+    gcTime: QUERY_CONFIG.gcTime,
+    retry: QUERY_CONFIG.retry,
+    refetchOnWindowFocus: QUERY_CONFIG.refetchOnWindowFocus,
+  });
+}
+
+// Hook for updating journal
+export function useUpdateJournal() {
+  const { getToken } = useAuth();
+
+  return useMutation<
+    void,
+    Error,
+    { id: string; text: string; mood: string; summary: string; reason: string }
+  >({
+    mutationFn: async ({ id, text, mood, summary, reason }) => {
+      const token = await getToken();
+
+      const response = await fetch(`${SERVER_URL}/api/update-journal/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          text,
+          mood,
+          summary,
+          reason,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update journal');
+      }
+    },
+  });
+}
+
+// Hook for deleting journal
+export function useDeleteJournal() {
+  const { getToken } = useAuth();
+
+  return useMutation<void, Error, string>({
+    mutationFn: async (journalId: string) => {
+      const token = await getToken();
+
+      const response = await fetch(
+        `${SERVER_URL}/api/delete-journal/${journalId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to delete journal');
+      }
     },
   });
 }
