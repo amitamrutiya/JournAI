@@ -1,10 +1,12 @@
+import Link from 'next/link';
+
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
 const moodEmojis = ['😊', '😌', '🤔', '😴', '😍', '🙂', '😑', '🤗', '😋', '🥳'];
 
 const getMoodEmojiForDay = (day: number): string => {
-  // Use day number to deterministically pick an emoji (pseudo-random but consistent)
+  // Use day number to deterministically pick an emoji
   return moodEmojis[day % moodEmojis.length];
 };
 
@@ -62,24 +64,32 @@ export function HeroSection() {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button
-                data-testid="start-journaling-button"
-                size="lg"
-                className="group bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 text-lg transition-all hover:scale-105"
-              >
-                📝 Start Journaling
-                <span className="ml-2 transition-transform group-hover:translate-x-1">
-                  →
-                </span>
-              </Button>
-              <Button
-                data-testid="how-it-works-button"
-                variant="outline"
-                size="lg"
-                className="border-border text-foreground hover:bg-accent hover:text-accent-foreground px-8 py-3 text-lg transition-all hover:scale-105"
-              >
-                📚 How It Works
-              </Button>
+              <Link href="/write">
+                <Button
+                  data-testid="start-journaling-button"
+                  size="lg"
+                  className="group bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 text-lg transition-all hover:scale-105"
+
+                  // onClick={() => {
+                  //   globalThis.location.href = '/write';
+                  // }}
+                >
+                  📝 Start Journaling
+                  <span className="ml-2 transition-transform group-hover:translate-x-1">
+                    →
+                  </span>
+                </Button>
+              </Link>
+              <Link href="#how-it-works">
+                <Button
+                  data-testid="how-it-works-button"
+                  variant="outline"
+                  size="lg"
+                  className="border-border text-foreground hover:bg-accent hover:text-accent-foreground px-8 py-3 text-lg transition-all hover:scale-105"
+                >
+                  📚 How It Works
+                </Button>
+              </Link>
             </div>
           </div>
 

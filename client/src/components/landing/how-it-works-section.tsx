@@ -57,13 +57,8 @@ export function HowItWorksSection() {
         </div>
 
         <div className="grid gap-8 md:grid-cols-3">
-          {steps.map((step, index) => (
+          {steps.map(step => (
             <div key={step.number} className="relative">
-              {/* Connector Line */}
-              {index < steps.length - 1 && (
-                <div className="from-chart-1 to-chart-2 absolute top-1/2 -right-4 z-10 hidden h-0.5 w-8 -translate-y-1/2 transform bg-gradient-to-r md:block" />
-              )}
-
               <Card
                 className={`bg-card h-full border p-6 shadow-lg transition-all hover:scale-105 hover:shadow-xl ${step.bgColor}`}
               >
