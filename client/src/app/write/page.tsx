@@ -10,6 +10,11 @@ import { PDFUpload } from '@/components/journal/pdf-upload';
 import SaveJournalButton from '@/components/journal/save-journal-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  useAnalyzeJournal,
+  usePDFExtract,
+  useSaveJournal,
+} from '@/hooks/use-journal-api';
 
 interface AIAnalysis {
   mood: string;
@@ -20,85 +25,47 @@ interface AIAnalysis {
 export default function WritePage() {
   const { isSignedIn } = useAuth();
   const [journalText, setJournalText] = useState('');
-  const [analysis, setAnalysis] = useState<AIAnalysis | undefined>();
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const analyzeJournalMutation = useAnalyzeJournal();
+
+  const saveJournalMutation = useSaveJournal();
+  const pdfExtractMutation = usePDFExtract();
 
   const handleAnalyzeWithAI = async () => {
     if (!journalText.trim()) return;
 
-    setIsAnalyzing(true);
     try {
-      const response = await fetch('/api/analyze-journal', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: journalText }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to analyze journal');
-      }
-
-      const result = await response.json();
-      setAnalysis(result);
+      await analyzeJournalMutation.mutateAsync({ text: journalText });
     } catch (error) {
       console.error('Error analyzing journal:', error);
-      // TODO: Add proper error handling/toast
-    } finally {
-      setIsAnalyzing(false);
     }
   };
 
   const handleSaveJournal = async () => {
-    if (!isSignedIn || !journalText.trim() || !analysis) return;
+    if (!isSignedIn || !journalText.trim() || !analyzeJournalMutation.data) {
+      return;
+    }
 
-    setIsSaving(true);
     try {
-      const response = await fetch('/api/save-journal', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: journalText,
-          mood: analysis.mood,
-          summary: analysis.summary,
-          reason: analysis.reason,
-        }),
+      await saveJournalMutation.mutateAsync({
+        text: journalText,
+        mood: analyzeJournalMutation.data.data.mood,
+        summary: analyzeJournalMutation.data.data.summary,
+        reason: analyzeJournalMutation.data.data.reason,
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to save journal');
-      }
 
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
       console.error('Error saving journal:', error);
       // TODO: Add proper error handling/toast
-    } finally {
-      setIsSaving(false);
     }
   };
 
   const handlePDFUpload = async (file: File) => {
     try {
-      const formData = new FormData();
-      formData.append('pdf', file);
-
-      const response = await fetch('/api/pdf-extract', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to extract PDF text');
-      }
-
-      const result = await response.json();
+      const result = await pdfExtractMutation.mutateAsync(file);
       setJournalText(result.text);
     } catch (error) {
       console.error('Error extracting PDF:', error);
@@ -147,10 +114,12 @@ export default function WritePage() {
             <div className="mt-4 flex justify-center">
               <Button
                 onClick={handleAnalyzeWithAI}
-                disabled={!journalText.trim() || isAnalyzing}
+                disabled={
+                  !journalText.trim() || analyzeJournalMutation.isPending
+                }
                 className="w-full max-w-xs"
               >
-                {isAnalyzing ? (
+                {analyzeJournalMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Analyzing...
@@ -167,23 +136,23 @@ export default function WritePage() {
         </Card>
 
         {/* AI Analysis Results */}
-        {analysis && (
+        {analyzeJournalMutation.data && (
           <AIAnalysisCard
-            mood={analysis.mood}
-            summary={analysis.summary}
-            reason={analysis.reason}
+            mood={analyzeJournalMutation.data.data.mood}
+            summary={analyzeJournalMutation.data.data.summary}
+            reason={analyzeJournalMutation.data.data.reason}
           />
         )}
 
         {/* Save Section */}
-        {analysis && (
+        {analyzeJournalMutation.data && (
           <Card>
-            <CardContent className="pt-6">
+            <CardContent className="pt-1">
               {isSignedIn ? (
                 <div className="space-y-4 text-center">
                   <SaveJournalButton
                     handleSaveJournal={handleSaveJournal}
-                    isSaving={isSaving}
+                    isSaving={saveJournalMutation.isPending}
                     saveSuccess={saveSuccess}
                   />
                   {saveSuccess && (

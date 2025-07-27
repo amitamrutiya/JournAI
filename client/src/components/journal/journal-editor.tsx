@@ -15,11 +15,12 @@ export function JournalEditor({
   return (
     <div className="overflow-hidden rounded-lg border">
       <Textarea
-        value={content}
+        // value={content}
         onChange={event_ => onChange(event_.target.value)}
         placeholder={placeholder}
         className="h-full resize-none p-4"
         rows={20}
+        defaultValue={`Today was amazing! I got a promotion at work and celebrated with my family. I feel so grateful and excited about the future. Everything seems to be going well.`}
       />
     </div>
   );
