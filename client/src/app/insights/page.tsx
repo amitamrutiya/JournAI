@@ -10,7 +10,7 @@ import {
   Target,
   TrendingUp,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -34,6 +34,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useGetJournalInsights } from '@/hooks/use-journal-api';
 
 interface InsightData {
   totalEntries: number;
@@ -64,11 +65,13 @@ const MOOD_COLORS = {
   anxious: '#F59E0B',
   excited: '#8B5CF6',
   angry: '#EF4444',
-  calm: '#6366F1',
-  neutral: '#6B7280',
+  peaceful: '#6366F1',
   grateful: '#059669',
   frustrated: '#EA580C',
-  content: '#0D9488',
+  worried: '#0D9488',
+  content: '#06B6D4',
+  neutral: '#6B7280',
+  tired: '#64748B',
 };
 
 const MOOD_EMOJIS = {
@@ -77,11 +80,13 @@ const MOOD_EMOJIS = {
   anxious: '😰',
   excited: '🤩',
   angry: '😠',
-  calm: '😌',
-  neutral: '😐',
+  peaceful: '😌',
   grateful: '🙏',
   frustrated: '😤',
+  worried: '😟',
   content: '😌',
+  neutral: '😐',
+  tired: '😴',
 };
 
 const getMoodEmoji = (mood: string) => {
@@ -98,81 +103,18 @@ const getTimeRangeLabel = (range: TimeRange) => {
   return labels[range];
 };
 
-function generateMockInsights(): InsightData {
-  return {
-    totalEntries: 127,
-    averageWordsPerEntry: 284,
-    longestStreak: 15,
-    currentStreak: 7,
-    moodDistribution: [
-      { mood: 'happy', count: 45, percentage: 35 },
-      { mood: 'calm', count: 32, percentage: 25 },
-      { mood: 'excited', count: 20, percentage: 16 },
-      { mood: 'neutral', count: 15, percentage: 12 },
-      { mood: 'anxious', count: 10, percentage: 8 },
-      { mood: 'sad', count: 5, percentage: 4 },
-    ],
-    wordCountTrend: [
-      { date: '2025-01-21', wordCount: 250, entryCount: 1 },
-      { date: '2025-01-22', wordCount: 320, entryCount: 1 },
-      { date: '2025-01-23', wordCount: 180, entryCount: 1 },
-      { date: '2025-01-24', wordCount: 450, entryCount: 2 },
-      { date: '2025-01-25', wordCount: 290, entryCount: 1 },
-      { date: '2025-01-26', wordCount: 380, entryCount: 1 },
-      { date: '2025-01-27', wordCount: 220, entryCount: 1 },
-    ],
-    weeklyActivity: [
-      { day: 'Mon', entries: 18 },
-      { day: 'Tue', entries: 22 },
-      { day: 'Wed', entries: 16 },
-      { day: 'Thu', entries: 20 },
-      { day: 'Fri', entries: 25 },
-      { day: 'Sat', entries: 15 },
-      { day: 'Sun', entries: 11 },
-    ],
-  };
-}
-
 export default function InsightsPage() {
   const { isSignedIn } = useAuth();
-  const [insights, setInsights] = useState<InsightData>();
-  const [isLoading, setIsLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<TimeRange>('month');
   const [selectedMoodFilter, setSelectedMoodFilter] = useState<string>();
 
-  useEffect(() => {
-    if (!isSignedIn) {
-      setIsLoading(false);
-      return;
-    }
+  const {
+    data: insights,
+    isLoading,
+    error,
+  } = useGetJournalInsights(timeRange, selectedMoodFilter);
 
-    const fetchInsights = async () => {
-      setIsLoading(true);
-      try {
-        const params = new URLSearchParams({
-          range: timeRange,
-          ...(selectedMoodFilter && { mood: selectedMoodFilter }),
-        });
-
-        const response = await fetch(`/api/journals/insights?${params}`);
-
-        if (response.ok) {
-          const data = await response.json();
-          setInsights(data);
-        } else {
-          // Use mock data for development
-          setInsights(generateMockInsights());
-        }
-      } catch (error) {
-        console.error('Error fetching insights:', error);
-        setInsights(generateMockInsights());
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchInsights();
-  }, [timeRange, selectedMoodFilter, isSignedIn]);
+  const displayInsights = insights;
 
   if (!isSignedIn) {
     return (
@@ -225,7 +167,7 @@ export default function InsightsPage() {
     );
   }
 
-  if (!insights) {
+  if (!displayInsights) {
     return (
       <div className="container mx-auto max-w-4xl px-4 py-8">
         <Card>
@@ -327,7 +269,9 @@ export default function InsightsPage() {
               <BookOpen className="text-muted-foreground h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{insights.totalEntries}</div>
+              <div className="text-2xl font-bold">
+                {displayInsights.totalEntries}
+              </div>
               <p className="text-muted-foreground text-xs">
                 <TrendingUp className="mr-1 inline h-3 w-3" />
                 +12% from last period
@@ -344,7 +288,7 @@ export default function InsightsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {insights.averageWordsPerEntry}
+                {displayInsights.averageWordsPerEntry}
               </div>
               <p className="text-muted-foreground text-xs">
                 <TrendingUp className="mr-1 inline h-3 w-3" />
@@ -361,7 +305,9 @@ export default function InsightsPage() {
               <Target className="text-muted-foreground h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{insights.currentStreak}</div>
+              <div className="text-2xl font-bold">
+                {displayInsights.currentStreak}
+              </div>
               <p className="text-muted-foreground text-xs">days in a row</p>
             </CardContent>
           </Card>
@@ -374,7 +320,9 @@ export default function InsightsPage() {
               <CalendarDays className="text-muted-foreground h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{insights.longestStreak}</div>
+              <div className="text-2xl font-bold">
+                {displayInsights.longestStreak}
+              </div>
               <p className="text-muted-foreground text-xs">personal record</p>
             </CardContent>
           </Card>
@@ -394,7 +342,7 @@ export default function InsightsPage() {
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={insights.moodDistribution}
+                    data={displayInsights.moodDistribution}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -405,14 +353,16 @@ export default function InsightsPage() {
                     fill="#8884d8"
                     dataKey="count"
                   >
-                    {insights.moodDistribution.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={
-                          MOOD_COLORS[entry.mood as keyof typeof MOOD_COLORS]
-                        }
-                      />
-                    ))}
+                    {displayInsights.moodDistribution.map(
+                      (entry: any, index: number) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={
+                            MOOD_COLORS[entry.mood as keyof typeof MOOD_COLORS]
+                          }
+                        />
+                      ),
+                    )}
                   </Pie>
                   <Tooltip
                     formatter={(value: number, name: string, props: any) => [
@@ -435,7 +385,7 @@ export default function InsightsPage() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={insights.wordCountTrend}>
+                <LineChart data={displayInsights.wordCountTrend}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis
                     dataKey="date"
@@ -477,7 +427,7 @@ export default function InsightsPage() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={insights.weeklyActivity}>
+              <BarChart data={displayInsights.weeklyActivity}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="day" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
