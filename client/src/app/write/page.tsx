@@ -120,7 +120,7 @@ export default function WritePage() {
         </div>
 
         {/* PDF Upload */}
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               📁 Upload PDF
@@ -129,7 +129,7 @@ export default function WritePage() {
           <CardContent>
             <PDFUpload onUpload={handlePDFUpload} />
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Journal Editor */}
         <Card>

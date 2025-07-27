@@ -1,5 +1,5 @@
 'use client';
-// import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
+import { Textarea } from '@/components/ui/textarea';
 
 interface JournalEditorProps {
   content: string;
@@ -12,51 +12,15 @@ export function JournalEditor({
   onChange,
   placeholder = 'Start writing...',
 }: JournalEditorProps) {
-  // const editor = useEditor({
-  //   extensions: [
-  //     StarterKit,
-  //     Placeholder.configure({
-  //       placeholder,
-  //     }),
-  //     CharacterCount.configure({
-  //       limit: 10_000,
-  //     }),
-  //   ],
-  //   immediatelyRender: false,
-  //   content,
-  //   onUpdate: ({ editor }) => {
-  //     onChange(editor.getHTML());
-  //   },
-  //   editorProps: {
-  //     attributes: {
-  //       class:
-  //         'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[300px] p-4',
-  //     },
-  //   },
-  // });
-
-  // Update editor content when prop changes (e.g., from PDF upload)
-  // useEffect(() => {
-  //   if (editor && content !== editor.getHTML()) {
-  //     editor.commands.setContent(content);
-  //   }
-  // }, [content, editor]);
-
-  // if (!editor) {
-  //   return;
-  // }
-
   return (
     <div className="overflow-hidden rounded-lg border">
-      {/* Toolbar */}
-
-      {/* Editor */}
-      <div className="min-h-[300px]">{/* <SimpleEditor /> */}</div>
-
-      {/* Character count */}
-      {/* <div className="bg-muted/50 text-muted-foreground border-t px-4 py-2 text-xs">
-        {editor.storage.characterCount.characters()} / 10,000 characters
-      </div> */}
+      <Textarea
+        value={content}
+        onChange={event_ => onChange(event_.target.value)}
+        placeholder={placeholder}
+        className="h-full resize-none p-4"
+        rows={20}
+      />
     </div>
   );
 }
