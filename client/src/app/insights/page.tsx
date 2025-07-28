@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useGetJournalInsights } from '@/hooks/use-journal-api';
+import Link from 'next/link';
 
 interface InsightData {
   totalEntries: number;
@@ -179,7 +180,9 @@ export default function InsightsPage() {
                 Start writing journal entries to see insights.
               </p>
             </div>
-            <Button>Write Your First Entry</Button>
+            <Link href="/write">
+              <Button>Write Your First Entry</Button>
+            </Link>
           </CardContent>
         </Card>
       </div>

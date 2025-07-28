@@ -9,105 +9,100 @@ import { analyzeJournalLimiter } from "../middleware/rateLimiters";
 const router = Router();
 
 // Analyze journal text with AI
-router.post(
-  "/api/analyze-journal",
-  analyzeJournalLimiter,
-  requireAuth(),
-  async (req, res) => {
-    const { userId } = getAuth(req);
-    if (!userId) {
-      log.warn("Unauthorized access attempt to analyze journal");
-      return sendError(res, "User authentication required", 401);
+router.post("/api/analyze-journal", analyzeJournalLimiter, async (req, res) => {
+  let { userId } = getAuth(req);
+
+  if (!userId) {
+    userId = "anonymous";
+  }
+
+  try {
+    // Basic validation
+    const { text } = req.body;
+    const trimmedText = text.trim();
+    if (!text || typeof text !== "string" || trimmedText.length === 0) {
+      log.warn("Invalid text field in journal analysis request", { userId });
+      return sendError(res, "Please provide valid journal text", 400);
     }
 
+    log.info("Journal analysis request received", {
+      userId,
+      textLength: trimmedText.length,
+    });
+
+    // Initialize Gemini service
+    let geminiService;
     try {
-      // Basic validation
-      const { text } = req.body;
-      const trimmedText = text.trim();
-      if (!text || typeof text !== "string" || trimmedText.length === 0) {
-        log.warn("Invalid text field in journal analysis request", { userId });
-        return sendError(res, "Please provide valid journal text", 400);
-      }
-
-      log.info("Journal analysis request received", {
-        userId,
-        textLength: trimmedText.length,
-      });
-
-      // Initialize Gemini service
-      let geminiService;
-      try {
-        geminiService = createGeminiService();
-      } catch (serviceError) {
-        log.error(
-          "Failed to initialize Gemini service",
-          serviceError instanceof Error
-            ? serviceError
-            : new Error(String(serviceError)),
-          { userId }
-        );
-        return sendError(
-          res,
-          "AI analysis service is currently unavailable",
-          503,
-          "Service configuration error"
-        );
-      }
-
-      // Analyze journal with Gemini AI
-      try {
-        const analysis = await geminiService.analyzeJournal(trimmedText);
-
-        log.info("Gemini analysis completed successfully", {
-          userId,
-          mood: analysis.mood,
-          textLength: trimmedText.length,
-        });
-
-        return sendSuccess(
-          res,
-          analysis,
-          "Journal analysis completed successfully"
-        );
-      } catch (analysisError) {
-        log.error(
-          "Gemini analysis failed",
-          analysisError instanceof Error
-            ? analysisError
-            : new Error(String(analysisError)),
-          { userId, textLength: trimmedText.length }
-        );
-
-        // Return a default response asking for journal content
-        const defaultAnalysis = {
-          mood: "neutral",
-          summary:
-            "Please share your journal thoughts and experiences for analysis",
-          reason:
-            "Unable to analyze the provided content. Please write about your day, feelings, or experiences.",
-        };
-
-        return sendSuccess(
-          res,
-          defaultAnalysis,
-          "Please provide journal content for analysis"
-        );
-      }
-    } catch (error) {
+      geminiService = createGeminiService();
+    } catch (serviceError) {
       log.error(
-        "Error processing journal analysis",
-        error instanceof Error ? error : new Error(String(error)),
+        "Failed to initialize Gemini service",
+        serviceError instanceof Error
+          ? serviceError
+          : new Error(String(serviceError)),
         { userId }
       );
       return sendError(
         res,
-        "Failed to analyze journal",
-        500,
-        error instanceof Error ? error.message : "Unknown error"
+        "AI analysis service is currently unavailable",
+        503,
+        "Service configuration error"
       );
     }
+
+    // Analyze journal with Gemini AI
+    try {
+      const analysis = await geminiService.analyzeJournal(trimmedText);
+
+      log.info("Gemini analysis completed successfully", {
+        userId,
+        mood: analysis.mood,
+        textLength: trimmedText.length,
+      });
+
+      return sendSuccess(
+        res,
+        analysis,
+        "Journal analysis completed successfully"
+      );
+    } catch (analysisError) {
+      log.error(
+        "Gemini analysis failed",
+        analysisError instanceof Error
+          ? analysisError
+          : new Error(String(analysisError)),
+        { userId, textLength: trimmedText.length }
+      );
+
+      // Return a default response asking for journal content
+      const defaultAnalysis = {
+        mood: "neutral",
+        summary:
+          "Please share your journal thoughts and experiences for analysis",
+        reason:
+          "Unable to analyze the provided content. Please write about your day, feelings, or experiences.",
+      };
+
+      return sendSuccess(
+        res,
+        defaultAnalysis,
+        "Please provide journal content for analysis"
+      );
+    }
+  } catch (error) {
+    log.error(
+      "Error processing journal analysis",
+      error instanceof Error ? error : new Error(String(error)),
+      { userId }
+    );
+    return sendError(
+      res,
+      "Failed to analyze journal",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
+    );
   }
-);
+});
 
 // Save journal entry to database
 router.post("/api/save-journal", requireAuth(), async (req, res) => {

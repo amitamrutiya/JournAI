@@ -19,32 +19,17 @@ A rich text journal writing interface with AI-powered mood analysis.
    - Character count (10,000 limit)
    - Clean, modern interface
 
-3. **PDF Upload**
-
-   - Upload PDF files to extract text
-   - Automatic text extraction and editor population
-   - Loading states and error handling
-
-4. **AI Analysis (Gemini)**
+3. **AI Analysis (Gemini)**
 
    - Mood detection with emoji representation
    - Content summary generation
    - Detailed reasoning for mood analysis
    - Fallback responses for reliability
 
-5. **Save Functionality**
+4. **Save Functionality**
    - Auth-gated saving
    - Login prompts for unauthenticated users
    - Success feedback and status indicators
-
-## 🔌 API Endpoints
-
-### Client-Side (Next.js API Routes)
-
-- `POST /api/analyze-journal` - Gemini AI mood analysis
-- `POST /api/pdf-extract` - PDF text extraction
-- `POST /api/save-journal` - Save journal entry (auth required)
-- `GET /api/get-user-session` - Get current user info
 
 ## 🛠️ Setup Instructions
 
@@ -86,7 +71,7 @@ Navigate to `http://localhost:3000/write`
 
 ## 🎯 Usage Flow
 
-1. **Write/Upload**: Enter text manually or upload a PDF
+1. **Write**: Enter text manually
 2. **Analyze**: Click "Analyze with AI" to get mood insights
 3. **Review**: View detected mood, summary, and reasoning
 4. **Save**: Login and save the journal entry (if authenticated)
@@ -95,7 +80,6 @@ Navigate to `http://localhost:3000/write`
 
 - **Real-time Rich Text Editing**: TipTap editor with formatting toolbar
 - **AI-Powered Analysis**: Gemini AI provides mood detection and insights
-- **PDF Support**: Extract text from uploaded PDF files
 - **Authentication Integration**: Clerk-based auth with protected save functionality
 - **Responsive Design**: Works on desktop and mobile devices
 - **Error Handling**: Graceful fallbacks for API failures
@@ -114,11 +98,3 @@ Navigate to `http://localhost:3000/write`
 - Emoji-enhanced mood display
 - Gradient-styled AI analysis cards
 - Mobile-responsive design
-
-## 🚀 Next Steps
-
-1. Connect to actual database (PostgreSQL via Prisma)
-2. Implement Calendar view for journal history
-3. Create Insights dashboard with mood analytics
-4. Add more advanced PDF text extraction
-5. Implement journal search and filtering

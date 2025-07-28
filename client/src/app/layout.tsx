@@ -37,6 +37,7 @@ export default function RootLayout({
       }}
     >
       <html lang="en" suppressHydrationWarning>
+        <link rel="icon" href="/logo.svg" />
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
