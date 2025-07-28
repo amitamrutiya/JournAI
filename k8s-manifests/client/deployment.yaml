@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: journai-client-deployment
+  namespace: journai
+  labels:
+    app: journai-client
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: journai-client
+  template:
+    metadata:
+      labels:
+        app: journai-client
+    spec:
+      containers:
+        - name: journai-client
+          image: public.ecr.aws/z0n1c1y3/journai-client:latest
+          imagePullPolicy: Always
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: journai-app-secrets
+                  key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+            - name: CLERK_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: journai-app-secrets
+                  key: CLERK_SECRET_KEY
+            - name: NEXT_PUBLIC_API_URL
+              value: "http://journai-server-service.journai.svc.cluster.local:8000"
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: journai-server-deployment
+  namespace: journai
+  labels:
+    app: journai-server
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: journai-server
+  template:
+    metadata:
+      labels:
+        app: journai-server
+    spec:
+      containers:
+        - name: journai-server
+          image: public.ecr.aws/z0n1c1y3/journai-server:latest
+          imagePullPolicy: Always
+          env:
+            - name: PORT
+              value: "8000"
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: journai-db-secrets
+                  key: DATABASE_URL
+            - name: CLERK_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: journai-app-secrets
+                  key: CLERK_SECRET_KEY
+            - name: CLERK_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: journai-app-secrets
+                  key: CLERK_WEBHOOK_SECRET
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: journai-app-secrets
+                  key: GEMINI_API_KEY
+            - name: CLERK_PUBLISHABLE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: journai-app-secrets
+                  key: CLERK_PUBLISHABLE_KEY
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 1
+            failureThreshold: 3
+            successThreshold: 1

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: journai-server-service
+  namespace: journai
+  labels:
+    app: journai-server
+spec:
+  selector:
+    app: journai-server
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+  type: ClusterIP
