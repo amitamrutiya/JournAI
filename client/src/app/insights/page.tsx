@@ -10,6 +10,7 @@ import {
   Target,
   TrendingUp,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 import {
   Bar,
@@ -35,7 +36,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useGetJournalInsights } from '@/hooks/use-journal-api';
-import Link from 'next/link';
 
 interface InsightData {
   totalEntries: number;
