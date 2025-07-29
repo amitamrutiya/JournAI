@@ -211,7 +211,7 @@ export default function CalendarPage() {
 
   if (!isSignedIn) {
     return (
-      <div className="container mx-auto max-w-6xl px-4 py-8">
+      <div className="container mx-auto max-w-7xl px-4 py-8">
         <Card>
           <CardContent className="space-y-4 pt-6 text-center">
             <CalendarDays className="text-muted-foreground mx-auto h-12 w-12" />
@@ -438,8 +438,7 @@ export default function CalendarPage() {
                   {/* Entry Content */}
                   <div className="space-y-2">
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                      {selectedEvent.resource.summary ||
-                        selectedEvent.resource.content.slice(0, 200) + '...'}
+                      {selectedEvent.resource.summary}
                     </p>
                   </div>
 

@@ -117,7 +117,7 @@ export function RichTextEditorDemo({
       <TipTapFloatingMenu editor={editor} />
       <EditorContent
         editor={editor}
-        className="min-h-[600px] w-full min-w-full cursor-text sm:p-6"
+        className="min-h-[300px] w-full min-w-full cursor-text sm:p-6"
       />
     </div>
   );

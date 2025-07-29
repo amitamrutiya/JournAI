@@ -1,7 +1,4 @@
 export const content = `
-  <h1>Welcome to Your Journal 📖</h1>
-  <p>Start capturing your thoughts, experiences, and memories in this beautiful digital journal.</p>
-
   <h2>Today's Entry</h2>
 
   <p><strong>How are you feeling today?</strong></p>

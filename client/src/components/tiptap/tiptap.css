@@ -107,7 +107,7 @@
   /* background-color: var(--editor-bg-default); */
   color: var(--editor-text-default);
   transition: all var(--editor-transition-normal);
-  min-height: 100vh;
+  min-height: 75vh;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

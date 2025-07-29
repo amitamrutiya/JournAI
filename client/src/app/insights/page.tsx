@@ -119,7 +119,7 @@ export default function InsightsPage() {
 
   if (!isSignedIn) {
     return (
-      <div className="container mx-auto max-w-6xl px-4 py-8">
+      <div className="container mx-auto max-w-7xl px-4 py-8">
         <Card>
           <CardContent className="space-y-4 pt-6 text-center">
             <BarChart3 className="text-muted-foreground mx-auto h-12 w-12" />
@@ -170,7 +170,7 @@ export default function InsightsPage() {
 
   if (!displayInsights) {
     return (
-      <div className="container mx-auto max-w-6xl px-4 py-8">
+      <div className="container mx-auto max-w-7xl px-4 py-8">
         <Card>
           <CardContent className="space-y-4 pt-6 text-center">
             <Brain className="text-muted-foreground mx-auto h-12 w-12" />

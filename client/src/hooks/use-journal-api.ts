@@ -25,6 +25,13 @@ interface SaveJournalRequest {
   reason?: string;
 }
 
+interface SaveJournalResponse {
+  id: string;
+  title: string;
+  mood: string;
+  createdAt: string;
+}
+
 interface PDFExtractResponse {
   text: string;
 }
@@ -61,7 +68,7 @@ export function useAnalyzeJournal() {
 export function useSaveJournal() {
   const { getToken } = useAuth();
 
-  return useMutation<void, Error, SaveJournalRequest>({
+  return useMutation<SaveJournalResponse, Error, SaveJournalRequest>({
     mutationFn: async ({
       text,
       mood = '',
@@ -87,6 +94,9 @@ export function useSaveJournal() {
       if (!response.ok) {
         throw new Error('Failed to save journal');
       }
+
+      const data = await response.json();
+      return data.data;
     },
   });
 }
