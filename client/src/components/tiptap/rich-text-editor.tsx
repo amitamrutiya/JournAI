@@ -17,8 +17,6 @@ import { StarterKit } from '@tiptap/starter-kit';
 
 import { TipTapFloatingMenu } from '@/components/tiptap/extensions/floating-menu';
 import { FloatingToolbar } from '@/components/tiptap/extensions/floating-toolbar';
-import { ImageExtension } from '@/components/tiptap/extensions/image';
-import { ImagePlaceholder } from '@/components/tiptap/extensions/image-placeholder';
 import { SearchAndReplace } from '@/components/tiptap/extensions/search-and-replace';
 import { cn } from '@/lib/utils';
 
@@ -73,8 +71,6 @@ const extensions = [
   Highlight.configure({
     multicolor: true,
   }),
-  ImageExtension,
-  ImagePlaceholder,
   SearchAndReplace,
   Typography,
 ];

@@ -1,7 +1,6 @@
 import winston from "winston";
 import path from "path";
 
-// Production-ready winston logger configuration
 const logger = winston.createLogger({
   level:
     process.env.LOG_LEVEL ||
@@ -14,16 +13,13 @@ const logger = winston.createLogger({
   transports: [],
 });
 
-// Add transports based on environment
 if (process.env.NODE_ENV === "production") {
-  // In production, primarily log to console (cloud platforms capture this)
   logger.add(
     new winston.transports.Console({
-      format: winston.format.json(), // Structured JSON for log aggregation
+      format: winston.format.json(),
     })
   );
 
-  // Optional file logging in production (disabled by default)
   if (process.env.ENABLE_FILE_LOGGING === "true") {
     logger.add(
       new winston.transports.File({
@@ -35,7 +31,6 @@ if (process.env.NODE_ENV === "production") {
     );
   }
 } else {
-  // Development: both console and file
   logger.add(
     new winston.transports.Console({
       format: winston.format.combine(

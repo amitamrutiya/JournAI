@@ -95,7 +95,6 @@ export default function CalendarPage() {
 
   const handleNavigate = (newDate: Date) => {
     setCurrentDate(newDate);
-    // Data will automatically refetch due to selectedMonth change
   };
 
   const handleNext = () => {
@@ -181,9 +180,7 @@ export default function CalendarPage() {
     ) {
       try {
         await deleteJournalMutation.mutateAsync(journalId);
-        // Refresh the journals list for current month
         myJournals.refetch();
-        // Close the dialog
         setIsDialogOpen(false);
       } catch (error) {
         console.error('Failed to delete journal:', error);

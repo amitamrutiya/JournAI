@@ -5,7 +5,6 @@ import { Card } from '@/components/ui/card';
 import { MOODS } from '@/lib/utils';
 
 const getMoodEmojiForDay = (day: number): string => {
-  // Use day number to deterministically pick an emoji
   return (
     MOODS[
       Object.keys(MOODS)[day % Object.keys(MOODS).length] as keyof typeof MOODS
@@ -72,10 +71,6 @@ export function HeroSection() {
                   data-testid="start-journaling-button"
                   size="lg"
                   className="group bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 text-lg transition-all hover:scale-105"
-
-                  // onClick={() => {
-                  //   globalThis.location.href = '/write';
-                  // }}
                 >
                   📝 Start Journaling
                   <span className="ml-2 transition-transform group-hover:translate-x-1">

@@ -1,8 +1,6 @@
 import { Response } from "express";
 
-/**
- * Standard API response format
- */
+//  Standard API response format
 export interface StandardResponse {
   success: boolean;
   message: string;
@@ -11,9 +9,7 @@ export interface StandardResponse {
   timestamp: string;
 }
 
-/**
- * Sends a success response
- */
+//  Sends a success response
 export const sendSuccess = (
   res: Response,
   data: any = null,
@@ -29,9 +25,7 @@ export const sendSuccess = (
   res.status(statusCode).json(response);
 };
 
-/**
- * Sends an error response
- */
+//  Sends an error response
 export const sendError = (
   res: Response,
   message: string = "An error occurred",

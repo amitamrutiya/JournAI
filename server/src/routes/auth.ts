@@ -69,33 +69,4 @@ router.get("/api/user-journals", requireAuth(), async (req, res) => {
   }
 });
 
-// Sync user's journal IDs
-router.post("/api/sync-journal-ids", requireAuth(), async (req, res) => {
-  const { userId } = getAuth(req);
-  if (!userId) {
-    log.warn("Unauthorized access attempt to sync journal IDs");
-    return sendError(res, "User authentication required", 401);
-  }
-
-  try {
-    await JournalService.syncUserJournalIds(userId);
-
-    log.info("Journal IDs synced successfully", { userId });
-
-    return sendSuccess(res, {}, "Journal IDs synced successfully");
-  } catch (error) {
-    log.error(
-      "Failed to sync journal IDs",
-      error instanceof Error ? error : new Error(String(error)),
-      { userId }
-    );
-    return sendError(
-      res,
-      "Failed to sync journal IDs",
-      500,
-      error instanceof Error ? error.message : "Unknown error"
-    );
-  }
-});
-
 export default router;

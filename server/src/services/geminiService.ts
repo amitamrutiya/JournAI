@@ -101,7 +101,6 @@ Respond with **only the JSON**, and nothing else.
    */
   private parseGeminiResponse(responseText: string): GeminiAnalysisResult {
     try {
-      // Clean the response text - remove any markdown formatting or extra text
       let cleanedText = responseText.trim();
 
       // Remove markdown code blocks if present
@@ -109,7 +108,6 @@ Respond with **only the JSON**, and nothing else.
         .replace(/```json\s*/gi, "")
         .replace(/```\s*/g, "");
 
-      // Find JSON object in the response
       const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error("No JSON object found in Gemini response");
@@ -117,7 +115,6 @@ Respond with **only the JSON**, and nothing else.
 
       const parsedResponse = JSON.parse(jsonMatch[0]);
 
-      // Validate required fields
       if (
         !parsedResponse.mood ||
         !parsedResponse.summary ||
@@ -126,7 +123,6 @@ Respond with **only the JSON**, and nothing else.
         throw new Error("Missing required fields in Gemini response");
       }
 
-      // Validate field types
       if (
         typeof parsedResponse.mood !== "string" ||
         typeof parsedResponse.summary !== "string" ||

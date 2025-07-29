@@ -1,4 +1,3 @@
-//
 import { type Metadata } from 'next';
 
 import { generateMetadata } from '@/lib/seo';

@@ -16,7 +16,7 @@ export const analyzeJournalLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req) => {
     const { userId } = getAuth(req);
-    return userId || ipKeyGenerator(req.ip || "anonymous"); // Use ipKeyGenerator helper for IPv6 compatibility
+    return userId || ipKeyGenerator(req.ip || "anonymous"); // ipKeyGenerator helper for IPv6 compatibility
   },
   handler: (req, res) => {
     const { userId } = getAuth(req);

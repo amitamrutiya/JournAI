@@ -104,14 +104,6 @@ const groups: CommandGroupType[] = [
         command: editor => editor.chain().focus().toggleCodeBlock().run(),
       },
       {
-        title: 'Image',
-        description: 'Insert an image',
-        icon: ImageIcon,
-        keywords: 'image picture photo',
-        command: editor =>
-          editor.chain().focus().insertImagePlaceholder().run(),
-      },
-      {
         title: 'Horizontal Rule',
         description: 'Add a horizontal divider',
         icon: Minus,

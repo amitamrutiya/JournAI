@@ -36,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useGetJournalInsights } from '@/hooks/use-journal-api';
+import { MOODS } from '@/lib/utils';
 
 interface InsightData {
   totalEntries: number;
@@ -60,38 +61,8 @@ interface InsightData {
 
 type TimeRange = 'week' | 'month' | 'quarter' | 'year';
 
-const MOOD_COLORS = {
-  happy: '#10B981',
-  sad: '#3B82F6',
-  anxious: '#F59E0B',
-  excited: '#8B5CF6',
-  angry: '#EF4444',
-  peaceful: '#6366F1',
-  grateful: '#059669',
-  frustrated: '#EA580C',
-  worried: '#0D9488',
-  content: '#06B6D4',
-  neutral: '#6B7280',
-  tired: '#64748B',
-};
-
-const MOOD_EMOJIS = {
-  happy: '😊',
-  sad: '😢',
-  anxious: '😰',
-  excited: '🤩',
-  angry: '😠',
-  peaceful: '😌',
-  grateful: '🙏',
-  frustrated: '😤',
-  worried: '😟',
-  content: '😌',
-  neutral: '😐',
-  tired: '😴',
-};
-
 const getMoodEmoji = (mood: string) => {
-  return MOOD_EMOJIS[mood as keyof typeof MOOD_EMOJIS] || '🎭';
+  return MOODS[mood as keyof typeof MOODS]?.emoji || '🎭';
 };
 
 const getTimeRangeLabel = (range: TimeRange) => {
@@ -248,7 +219,7 @@ export default function InsightsPage() {
                 >
                   All Moods
                 </DropdownMenuItem>
-                {Object.keys(MOOD_COLORS).map(mood => (
+                {Object.keys(MOODS).map(mood => (
                   <DropdownMenuItem
                     key={mood}
                     onClick={() => setSelectedMoodFilter(mood)}
@@ -361,7 +332,8 @@ export default function InsightsPage() {
                         <Cell
                           key={`cell-${index}`}
                           fill={
-                            MOOD_COLORS[entry.mood as keyof typeof MOOD_COLORS]
+                            MOODS[entry.mood as keyof typeof MOODS]?.color ||
+                            '#8884d8'
                           }
                         />
                       ),
