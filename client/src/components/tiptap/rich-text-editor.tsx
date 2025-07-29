@@ -108,7 +108,7 @@ export function RichTextEditorDemo({
   return (
     <div
       className={cn(
-        'bg-card relative max-h-[calc(100dvh-6rem)] w-full overflow-hidden overflow-y-scroll border pb-[60px] sm:pb-0',
+        'bg-card relative max-h-[calc(100dvh-17rem)] w-full overflow-hidden overflow-y-scroll border pb-[60px] sm:pb-0',
         className,
       )}
     >

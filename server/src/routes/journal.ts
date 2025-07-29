@@ -121,15 +121,15 @@ router.post("/api/save-journal", requireAuth(), async (req, res) => {
       return sendError(res, "Please provide valid journal text", 400);
     }
 
-    if (!mood || !summary || !reason) {
-      log.warn("Missing required fields in save journal request", { userId });
-      return sendError(res, "Missing required analysis fields", 400);
-    }
+    const moodValue = mood && typeof mood === "string" ? mood : "";
+    const summaryValue = summary && typeof summary === "string" ? summary : "";
+    const reasonValue = reason && typeof reason === "string" ? reason : "";
 
     log.info("Journal save request received", {
       userId,
       textLength: text.trim().length,
-      mood,
+      mood: moodValue,
+      hasAnalysis: !!(moodValue && summaryValue && reasonValue),
     });
 
     // Save journal to database using JournalService
@@ -137,17 +137,18 @@ router.post("/api/save-journal", requireAuth(), async (req, res) => {
       const journalData = {
         userId,
         text: text.trim(),
-        mood,
-        summary,
-        reason,
+        mood: moodValue,
+        summary: summaryValue,
+        reason: reasonValue,
       };
 
       const savedJournal = await JournalService.saveJournal(journalData);
 
       log.info("Journal saved successfully", {
         userId,
-        mood,
+        mood: moodValue,
         journalId: savedJournal.id,
+        hasAnalysis: !!(moodValue && summaryValue && reasonValue),
       });
 
       return sendSuccess(
@@ -213,25 +214,25 @@ router.put("/api/update-journal/:id", requireAuth(), async (req, res) => {
       return sendError(res, "Please provide valid journal text", 400);
     }
 
-    if (!mood || !summary || !reason) {
-      log.warn("Missing required fields in update journal request", { userId });
-      return sendError(res, "Missing required analysis fields", 400);
-    }
+    const moodValue = mood && typeof mood === "string" ? mood : "";
+    const summaryValue = summary && typeof summary === "string" ? summary : "";
+    const reasonValue = reason && typeof reason === "string" ? reason : "";
 
     log.info("Journal update request received", {
       userId,
       journalId,
       textLength: text.trim().length,
-      mood,
+      mood: moodValue,
+      hasAnalysis: !!(moodValue && summaryValue && reasonValue),
     });
 
     // Update journal in database using JournalService
     try {
       const journalData = {
         text: text.trim(),
-        mood,
-        summary,
-        reason,
+        mood: moodValue,
+        summary: summaryValue,
+        reason: reasonValue,
       };
 
       const updatedJournal = await JournalService.updateJournal(
@@ -250,8 +251,9 @@ router.put("/api/update-journal/:id", requireAuth(), async (req, res) => {
 
       log.info("Journal updated successfully", {
         userId,
-        mood,
+        mood: moodValue,
         journalId,
+        hasAnalysis: !!(moodValue && summaryValue && reasonValue),
       });
 
       return sendSuccess(
@@ -293,146 +295,6 @@ router.put("/api/update-journal/:id", requireAuth(), async (req, res) => {
     );
   }
 });
-
-module.exports = router;
-// Update journal entry in database
-router.put("/api/update-journal/:id", requireAuth(), async (req, res) => {
-  const { userId } = getAuth(req);
-  if (!userId) {
-    log.warn("Unauthorized access attempt to update journal");
-    return sendError(res, "User authentication required", 401);
-  }
-
-  try {
-    const { id: journalId } = req.params;
-    const { text, mood, summary, reason } = req.body;
-
-    // Basic validation
-    if (!journalId) {
-      log.warn("Missing journal ID in update request", { userId });
-      return sendError(res, "Journal ID is required", 400);
-    }
-
-    if (!text || typeof text !== "string" || text.trim().length === 0) {
-      log.warn("Invalid text field in update journal request", { userId });
-      return sendError(res, "Please provide valid journal text", 400);
-    }
-
-    if (!mood || !summary || !reason) {
-      log.warn("Missing required fields in update journal request", { userId });
-      return sendError(res, "Missing required analysis fields", 400);
-    }
-
-    log.info("Journal update request received", {
-      userId,
-      journalId,
-      textLength: text.trim().length,
-      mood,
-    });
-
-    // Update journal in database using JournalService
-    try {
-      const journalData = {
-        text: text.trim(),
-        mood,
-        summary,
-        reason,
-      };
-
-      const updatedJournal = await JournalService.updateJournal(
-        journalId,
-        userId,
-        journalData
-      );
-
-      if (!updatedJournal) {
-        log.warn("Journal not found or access denied for update", {
-          userId,
-          journalId,
-        });
-        return sendError(res, "Journal not found", 404);
-      }
-
-      log.info("Journal updated successfully", {
-        userId,
-        mood,
-        journalId,
-      });
-
-      return sendSuccess(
-        res,
-        {
-          id: updatedJournal.id,
-          title: updatedJournal.title,
-          mood: updatedJournal.mood,
-          updatedAt: updatedJournal.updatedAt,
-        },
-        "Journal updated successfully"
-      );
-    } catch (dbError) {
-      log.error(
-        "Database error updating journal",
-        dbError instanceof Error ? dbError : new Error(String(dbError)),
-        { userId, journalId, mood }
-      );
-
-      // Return a more specific error message
-      return sendError(
-        res,
-        "Failed to update journal in database",
-        500,
-        dbError instanceof Error ? dbError.message : "Database connection error"
-      );
-    }
-  } catch (error) {
-    log.error(
-      "Error updating journal",
-      error instanceof Error ? error : new Error(String(error)),
-      { userId }
-    );
-    return sendError(
-      res,
-      "Failed to update journal",
-      500,
-      error instanceof Error ? error.message : "Unknown error"
-    );
-  }
-});
-
-// Extract text from PDF (placeholder)
-router.post("/api/pdf-extract", requireAuth(), async (req, res) => {
-  const { userId } = getAuth(req);
-  if (!userId) {
-    log.warn("Unauthorized access attempt to extract PDF");
-    return sendError(res, "User authentication required", 401);
-  }
-
-  try {
-    // TODO: Implement PDF text extraction logic
-    // For now, return a placeholder response
-    log.info("PDF extract request received", { userId });
-
-    return sendError(
-      res,
-      "PDF extraction not implemented yet",
-      501,
-      "This feature is coming soon"
-    );
-  } catch (error) {
-    log.error(
-      "Error extracting PDF",
-      error instanceof Error ? error : new Error(String(error)),
-      { userId }
-    );
-    return sendError(
-      res,
-      "Failed to extract PDF text",
-      500,
-      error instanceof Error ? error.message : "Unknown error"
-    );
-  }
-});
-
 router.get("/api/get-user-journal", requireAuth(), async (req, res) => {
   const { userId } = getAuth(req);
   if (!userId) {

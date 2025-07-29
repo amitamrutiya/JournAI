@@ -20,9 +20,9 @@ interface AnalyzeJournalRequest {
 
 interface SaveJournalRequest {
   text: string;
-  mood: string;
-  summary: string;
-  reason: string;
+  mood?: string;
+  summary?: string;
+  reason?: string;
 }
 
 interface PDFExtractResponse {
@@ -62,7 +62,12 @@ export function useSaveJournal() {
   const { getToken } = useAuth();
 
   return useMutation<void, Error, SaveJournalRequest>({
-    mutationFn: async ({ text, mood, summary, reason }: SaveJournalRequest) => {
+    mutationFn: async ({
+      text,
+      mood = '',
+      summary = '',
+      reason = '',
+    }: SaveJournalRequest) => {
       const token = await getToken();
 
       const response = await fetch(`${SERVER_URL}/api/save-journal`, {
@@ -186,9 +191,15 @@ export function useUpdateJournal() {
   return useMutation<
     void,
     Error,
-    { id: string; text: string; mood: string; summary: string; reason: string }
+    {
+      id: string;
+      text: string;
+      mood?: string;
+      summary?: string;
+      reason?: string;
+    }
   >({
-    mutationFn: async ({ id, text, mood, summary, reason }) => {
+    mutationFn: async ({ id, text, mood = '', summary = '', reason = '' }) => {
       const token = await getToken();
 
       const response = await fetch(`${SERVER_URL}/api/update-journal/${id}`, {

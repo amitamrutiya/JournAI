@@ -37,6 +37,7 @@ function WritePageContent() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [existingAnalysis, setExistingAnalysis] = useState<AIAnalysis>();
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const analyzeJournalMutation = useAnalyzeJournal();
   const saveJournalMutation = useSaveJournal();
@@ -67,6 +68,19 @@ function WritePageContent() {
     }
   }, [editJournalId, existingJournal.data, isEditMode]);
 
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges && journalText.trim()) {
+        event.preventDefault();
+        event.returnValue =
+          'You have unsaved changes. Are you sure you want to leave?';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges, journalText]);
+
   const handleAnalyzeWithAI = async () => {
     if (!journalText.trim()) return;
 
@@ -88,7 +102,7 @@ function WritePageContent() {
     // Prioritize new analysis over existing analysis
     const analysisData = analyzeJournalMutation.data?.data || existingAnalysis;
 
-    if (!isSignedIn || !journalText.trim() || !analysisData) {
+    if (!isSignedIn || !journalText.trim()) {
       return;
     }
 
@@ -97,18 +111,19 @@ function WritePageContent() {
         ? updateJournalMutation.mutateAsync({
             id: editJournalId,
             text: journalText,
-            mood: analysisData.mood,
-            summary: analysisData.summary,
-            reason: analysisData.reason,
+            mood: analysisData?.mood || '',
+            summary: analysisData?.summary || '',
+            reason: analysisData?.reason || '',
           })
         : saveJournalMutation.mutateAsync({
             text: journalText,
-            mood: analysisData.mood,
-            summary: analysisData.summary,
-            reason: analysisData.reason,
+            mood: analysisData?.mood || '',
+            summary: analysisData?.summary || '',
+            reason: analysisData?.reason || '',
           }));
 
       setSaveSuccess(true);
+      setHasUnsavedChanges(false); // Mark as saved
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
       console.error('Error saving journal:', error);
@@ -167,14 +182,11 @@ function WritePageContent() {
       <div className="space-y-6">
         {/* Header */}
         <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">
-            {isEditMode ? 'Edit Your Journal' : 'Write Your Journal'}
-          </h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl font-bold tracking-tight">
             {isEditMode
               ? 'Update your thoughts and analysis'
               : 'Express your thoughts and let AI help you understand your emotions'}
-          </p>
+          </h1>
         </div>
 
         {/* PDF Upload */}
@@ -192,7 +204,21 @@ function WritePageContent() {
         {/* Back to Calendar button when editing */}
         {isEditMode && (
           <div className="flex justify-start">
-            <Button variant="outline" onClick={() => router.push('/calendar')}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (hasUnsavedChanges && journalText.trim()) {
+                  const confirmed = globalThis.confirm(
+                    'You have unsaved changes. Are you sure you want to leave without saving?',
+                  );
+                  if (confirmed) {
+                    router.push('/calendar');
+                  }
+                } else {
+                  router.push('/calendar');
+                }
+              }}
+            >
               ← Back to Calendar
             </Button>
           </div>
@@ -201,58 +227,90 @@ function WritePageContent() {
         {/* Journal Editor */}
 
         <CardContent>
-          <JournalEditor content={journalText} onChange={setJournalText} />
+          <JournalEditor
+            content={journalText}
+            onChange={newContent => {
+              setJournalText(newContent);
+              if (newContent !== content && newContent.trim()) {
+                setHasUnsavedChanges(true);
+              }
+            }}
+          />
 
-          {/* Analyze Button - Only show if not in edit mode */}
-          {!isEditMode && (
-            <div className="mt-4 flex justify-center">
-              <Button
-                onClick={handleAnalyzeWithAI}
-                disabled={
-                  !journalText.trim() || analyzeJournalMutation.isPending
-                }
-                className="w-full max-w-xs"
-              >
-                {analyzeJournalMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <Brain className="mr-2 h-4 w-4" />
-                    💡 Analyze with AI
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
+          {/* Action Buttons Row */}
+          {journalText.trim() && (
+            <div className="mt-6 space-y-4">
+              <div className="flex flex-col justify-center gap-3 sm:flex-row">
+                {/* Analyze Button */}
+                <Button
+                  onClick={handleAnalyzeWithAI}
+                  disabled={
+                    !journalText.trim() || analyzeJournalMutation.isPending
+                  }
+                  variant={
+                    analyzeJournalMutation.data || existingAnalysis
+                      ? 'outline'
+                      : 'default'
+                  }
+                  className="max-w-xs flex-1"
+                >
+                  {analyzeJournalMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {analyzeJournalMutation.data || existingAnalysis
+                        ? 'Re-analyzing...'
+                        : 'Analyzing...'}
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="mr-2 h-4 w-4" />
+                      {analyzeJournalMutation.data || existingAnalysis
+                        ? '🔄 Re-analyze with AI'
+                        : '💡 Analyze with AI'}
+                    </>
+                  )}
+                </Button>
 
-          {/* Analyze/Re-analyze Button for edit mode */}
-          {isEditMode && (
-            <div className="mt-4 flex justify-center">
-              <Button
-                onClick={handleAnalyzeWithAI}
-                disabled={
-                  !journalText.trim() || analyzeJournalMutation.isPending
-                }
-                variant={existingAnalysis ? 'outline' : 'default'}
-                className="w-full max-w-xs"
-              >
-                {analyzeJournalMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {existingAnalysis ? 'Re-analyzing...' : 'Analyzing...'}
-                  </>
+                {/* Save Button */}
+                {isSignedIn ? (
+                  <SaveJournalButton
+                    handleSaveJournal={handleSaveJournal}
+                    isSaving={
+                      saveJournalMutation.isPending ||
+                      updateJournalMutation.isPending
+                    }
+                    saveSuccess={saveSuccess}
+                  />
                 ) : (
-                  <>
-                    <Brain className="mr-2 h-4 w-4" />
-                    {existingAnalysis
-                      ? '🔄 Re-analyze with AI'
-                      : '💡 Analyze with AI'}
-                  </>
+                  <SignInButton>
+                    <Button className="max-w-xs flex-1">
+                      <LogIn className="mr-2 h-4 w-4" />
+                      🔐 Login to Save
+                    </Button>
+                  </SignInButton>
                 )}
-              </Button>
+              </div>
+
+              {/* Status Messages */}
+              <div className="space-y-2 text-center">
+                {saveSuccess && (
+                  <p className="text-sm text-green-600 dark:text-green-400">
+                    ✅ Your journal has been saved to your account.
+                  </p>
+                )}
+                {!isSignedIn && (
+                  <p className="text-muted-foreground text-sm">
+                    Login to save this journal and track your mood over time.
+                  </p>
+                )}
+                {isSignedIn &&
+                  !(analyzeJournalMutation.data || existingAnalysis) && (
+                    <p className="text-muted-foreground text-sm">
+                      � Tip: Use &ldquo;Analyze with AI&rdquo; to get mood
+                      insights before saving
+                    </p>
+                  )}
+              </div>
             </div>
           )}
         </CardContent>
@@ -276,43 +334,6 @@ function WritePageContent() {
               ''
             }
           />
-        )}
-
-        {/* Save Section */}
-        {(analyzeJournalMutation.data || existingAnalysis) && (
-          <Card>
-            <CardContent className="pt-1">
-              {isSignedIn ? (
-                <div className="space-y-4 text-center">
-                  <SaveJournalButton
-                    handleSaveJournal={handleSaveJournal}
-                    isSaving={
-                      saveJournalMutation.isPending ||
-                      updateJournalMutation.isPending
-                    }
-                    saveSuccess={saveSuccess}
-                  />
-                  {saveSuccess && (
-                    <p className="text-sm text-green-600 dark:text-green-400">
-                      Your journal has been saved to your account.
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-4 text-center">
-                  <p className="text-muted-foreground">
-                    Login to save this journal and track your mood over time.
-                  </p>
-                  <SignInButton>
-                    <Button>
-                      <LogIn className="mr-2 h-4 w-4" />
-                      🔐 Login to Save
-                    </Button>
-                  </SignInButton>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         )}
       </div>
     </div>
