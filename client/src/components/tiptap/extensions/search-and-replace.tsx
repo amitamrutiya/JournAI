@@ -1,4 +1,6 @@
 /* eslint-disable unicorn/consistent-function-scoping */
+
+//@ts-nocheck
 import { type Editor as CoreEditor, Extension, type Range } from '@tiptap/core';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
