@@ -18,6 +18,7 @@ import {
   useSaveJournal,
   useUpdateJournal,
 } from '@/hooks/use-journal-api';
+import { content } from '@/lib/content';
 
 interface AIAnalysis {
   mood: string;
@@ -31,7 +32,8 @@ function WritePageContent() {
   const searchParams = useSearchParams();
   const editJournalId = searchParams.get('edit');
 
-  const [journalText, setJournalText] = useState('');
+  const [journalText, setJournalText] = useState(content);
+
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [existingAnalysis, setExistingAnalysis] = useState<AIAnalysis>();
@@ -127,7 +129,7 @@ function WritePageContent() {
   // Show loading state when fetching existing journal
   if (editJournalId && existingJournal.isPending) {
     return (
-      <div className="container mx-auto max-w-4xl px-4 py-8">
+      <div className="container mx-auto max-w-6xl px-4 py-8">
         <div className="flex h-96 items-center justify-center">
           <div className="space-y-4 text-center">
             <Loader2 className="text-muted-foreground mx-auto h-8 w-8 animate-spin" />
@@ -141,7 +143,7 @@ function WritePageContent() {
   // Show error state if journal not found
   if (editJournalId && existingJournal.isError) {
     return (
-      <div className="container mx-auto max-w-4xl px-4 py-8">
+      <div className="container mx-auto max-w-6xl px-4 py-8">
         <Card>
           <CardContent className="space-y-4 pt-6 text-center">
             <div>
@@ -161,7 +163,7 @@ function WritePageContent() {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-8">
+    <div className="container mx-auto max-w-6xl px-4 py-8">
       <div className="space-y-6">
         {/* Header */}
         <div className="space-y-2 text-center">
@@ -197,71 +199,63 @@ function WritePageContent() {
         )}
 
         {/* Journal Editor */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Journal Entry</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <JournalEditor
-              content={journalText}
-              onChange={setJournalText}
-              placeholder="Write your journal entry here..."
-            />
 
-            {/* Analyze Button - Only show if not in edit mode */}
-            {!isEditMode && (
-              <div className="mt-4 flex justify-center">
-                <Button
-                  onClick={handleAnalyzeWithAI}
-                  disabled={
-                    !journalText.trim() || analyzeJournalMutation.isPending
-                  }
-                  className="w-full max-w-xs"
-                >
-                  {analyzeJournalMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <Brain className="mr-2 h-4 w-4" />
-                      💡 Analyze with AI
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
+        <CardContent>
+          <JournalEditor content={journalText} onChange={setJournalText} />
 
-            {/* Analyze/Re-analyze Button for edit mode */}
-            {isEditMode && (
-              <div className="mt-4 flex justify-center">
-                <Button
-                  onClick={handleAnalyzeWithAI}
-                  disabled={
-                    !journalText.trim() || analyzeJournalMutation.isPending
-                  }
-                  variant={existingAnalysis ? 'outline' : 'default'}
-                  className="w-full max-w-xs"
-                >
-                  {analyzeJournalMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {existingAnalysis ? 'Re-analyzing...' : 'Analyzing...'}
-                    </>
-                  ) : (
-                    <>
-                      <Brain className="mr-2 h-4 w-4" />
-                      {existingAnalysis
-                        ? '🔄 Re-analyze with AI'
-                        : '💡 Analyze with AI'}
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          {/* Analyze Button - Only show if not in edit mode */}
+          {!isEditMode && (
+            <div className="mt-4 flex justify-center">
+              <Button
+                onClick={handleAnalyzeWithAI}
+                disabled={
+                  !journalText.trim() || analyzeJournalMutation.isPending
+                }
+                className="w-full max-w-xs"
+              >
+                {analyzeJournalMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Brain className="mr-2 h-4 w-4" />
+                    💡 Analyze with AI
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+
+          {/* Analyze/Re-analyze Button for edit mode */}
+          {isEditMode && (
+            <div className="mt-4 flex justify-center">
+              <Button
+                onClick={handleAnalyzeWithAI}
+                disabled={
+                  !journalText.trim() || analyzeJournalMutation.isPending
+                }
+                variant={existingAnalysis ? 'outline' : 'default'}
+                className="w-full max-w-xs"
+              >
+                {analyzeJournalMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {existingAnalysis ? 'Re-analyzing...' : 'Analyzing...'}
+                  </>
+                ) : (
+                  <>
+                    <Brain className="mr-2 h-4 w-4" />
+                    {existingAnalysis
+                      ? '🔄 Re-analyze with AI'
+                      : '💡 Analyze with AI'}
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </CardContent>
 
         {/* AI Analysis Results */}
         {(analyzeJournalMutation.data || existingAnalysis) && (
@@ -329,7 +323,7 @@ export default function WritePage() {
   return (
     <Suspense
       fallback={
-        <div className="container mx-auto max-w-4xl px-4 py-8">
+        <div className="container mx-auto max-w-6xl px-4 py-8">
           <div className="flex h-96 items-center justify-center">
             <div className="space-y-4 text-center">
               <Loader2 className="text-muted-foreground mx-auto h-8 w-8 animate-spin" />

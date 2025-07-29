@@ -211,7 +211,7 @@ export default function CalendarPage() {
 
   if (!isSignedIn) {
     return (
-      <div className="container mx-auto max-w-4xl px-4 py-8">
+      <div className="container mx-auto max-w-6xl px-4 py-8">
         <Card>
           <CardContent className="space-y-4 pt-6 text-center">
             <CalendarDays className="text-muted-foreground mx-auto h-12 w-12" />

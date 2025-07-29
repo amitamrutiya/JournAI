@@ -35,6 +35,7 @@ const eslintConfig = [
       'unicorn/no-array-callback-reference': 'off',
       'unicorn/no-array-for-each': 'off',
       'unicorn/no-array-reduce': 'off',
+      'jsx-a11y/alt-text': 'off',
       'unicorn/no-nested-ternary': 'off',
       'unicorn/prevent-abbreviations': [
         'error',
