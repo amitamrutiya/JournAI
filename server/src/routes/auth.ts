@@ -33,40 +33,4 @@ router.get("/protected", requireAuth(), async (req, res) => {
   }
 });
 
-// Get user data with journal IDs
-router.get("/api/user-journals", requireAuth(), async (req, res) => {
-  const { userId } = getAuth(req);
-  if (!userId) {
-    log.warn("Unauthorized access attempt to get user journals");
-    return sendError(res, "User authentication required", 401);
-  }
-
-  try {
-    const user = await JournalService.getUserWithJournalIds(userId);
-
-    log.info("User data with journal IDs retrieved successfully", {
-      userId,
-      journalCount: user.journalIds.length,
-    });
-
-    return sendSuccess(
-      res,
-      { user },
-      "User data with journal IDs retrieved successfully"
-    );
-  } catch (error) {
-    log.error(
-      "Failed to retrieve user data with journal IDs",
-      error instanceof Error ? error : new Error(String(error)),
-      { userId }
-    );
-    return sendError(
-      res,
-      "Failed to retrieve user data",
-      500,
-      error instanceof Error ? error.message : "Unknown error"
-    );
-  }
-});
-
 export default router;

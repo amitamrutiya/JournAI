@@ -19,7 +19,6 @@ export class UserService {
           email: userData.email,
           name: userData.name,
           imageUrl: userData.imageUrl,
-          journalIds: [],
           createdAt: new Date(),
           updatedAt: new Date(),
         },
