@@ -1,100 +1,205 @@
-# 🖊️ JournAI - Writing Journal Page
+# 📝 JournAI
 
-A rich text journal writing interface with AI-powered mood analysis.
+**JournAI** is an AI-powered journaling and mood tracking application that helps you reflect on your thoughts, track your emotions, and gain insights into your mental wellness journey.
 
-## ✨ Features
+## ✨ What is JournAI?
 
-### 🧱 UI Components
+JournAI combines the traditional practice of journaling with modern AI technology to provide:
+- **Smart Writing Assistant**: AI-powered suggestions and prompts to help you express your thoughts
+- **Mood Tracking**: Track your emotions and see patterns over time
+- **Personalized Insights**: Get AI-generated summaries and reflections on your journal entries
+- **Secure & Private**: Your thoughts are safely stored and protected
 
-1. **Top Navigation Bar**
+## 🏗️ Project Structure
 
-   - App logo and name
-   - Navigation links (Write, Calendar, Insights)
-   - Auth-aware buttons (Login/Signup or Profile dropdown)
+This project consists of two main parts:
 
-2. **Rich Text Editor (TipTap)**
-
-   - Rich text formatting (Bold, Italic, Headers, Lists)
-   - Placeholder text guidance
-   - Character count (10,000 limit)
-   - Clean, modern interface
-
-3. **AI Analysis (Gemini)**
-
-   - Mood detection with emoji representation
-   - Content summary generation
-   - Detailed reasoning for mood analysis
-   - Fallback responses for reliability
-
-4. **Save Functionality**
-   - Auth-gated saving
-   - Login prompts for unauthenticated users
-   - Success feedback and status indicators
-
-## 🛠️ Setup Instructions
-
-### 1. Environment Variables
-
-Create `.env.local` in the client directory:
-
-```bash
-# Required: Google Gemini AI API Key
-GEMINI_API_KEY=your_gemini_api_key_here
-
-# Required: Clerk Authentication
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key_here
-CLERK_SECRET_KEY=your_clerk_secret_key_here
-
-# Optional: Clerk URLs (defaults work for most cases)
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/write
-NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/write
+```
+JournAI/
+├── client/          # Frontend (what users see and interact with)
+├── server/          # Backend (handles data and AI processing)
+├── k8s-manifests/   # Deployment configurations
+└── docs/            # Documentation
 ```
 
-### 2. Install Dependencies
+### Frontend (Client)
+- **Technology**: Next.js with React and TypeScript
+- **Purpose**: The user interface where people write journals and view insights
+- **Features**: Modern web app with authentication, text editor, and dashboard
 
+### Backend (Server)
+- **Technology**: Node.js with Express and TypeScript
+- **Purpose**: Handles data storage, user authentication, and AI processing
+- **Database**: PostgreSQL with Prisma ORM
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+Before you begin, make sure you have installed:
+- [Node.js](https://nodejs.org/) (version 18 or higher)
+- [Docker](https://www.docker.com/) (for easy setup)
+- [Git](https://git-scm.com/)
+
+### Option 1: Using Docker (Recommended for Beginners)
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/amitamrutiya/JournAI.git
+   cd JournAI
+   ```
+
+2. **Start the application**
+   ```bash
+   ./start-dev.sh
+   ```
+
+   This will:
+   - Build both frontend and backend
+   - Start the database
+   - Launch the application
+
+3. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+
+### Option 2: Manual Setup
+
+1. **Clone and install dependencies**
+   ```bash
+   git clone https://github.com/amitamrutiya/JournAI.git
+   cd JournAI
+   make install
+   ```
+
+2. **Set up environment variables**
+   - Copy `.env.example` files in both `client/` and `server/` directories
+   - Rename them to `.env.local` and `.env` respectively
+   - Fill in the required values (database URL, API keys, etc.)
+
+3. **Start development servers**
+   ```bash
+   make dev
+   ```
+
+## 🛠️ Available Commands
+
+We use a Makefile to simplify common tasks:
+
+| Command | What it does |
+|---------|-------------|
+| `make help` | Show all available commands |
+| `make install` | Install all dependencies |
+| `make dev` | Start both frontend and backend in development mode |
+| `make build` | Build both applications for production |
+| `make test` | Run tests |
+| `make clean` | Remove all build files and dependencies |
+| `make docker-up` | Start application using Docker |
+| `make prisma-studio` | Open database viewer |
+
+## 🔧 Development
+
+### Frontend Development
 ```bash
 cd client
-npm install
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run test         # Run tests
+npm run lint         # Check code quality
 ```
 
-### 3. Run Development Server
-
+### Backend Development
 ```bash
-npm run dev
+cd server
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run prisma:studio # View database
+npm run seed         # Add sample data
 ```
 
-### 4. Access the Journal
+## 📱 Features
 
-Navigate to `http://localhost:3000/write`
+- **✍️ Rich Text Editor**: Write your thoughts with a beautiful, distraction-free editor
+- **🎭 Mood Tracking**: Select and track your emotions with each entry
+- **🤖 AI Insights**: Get AI-generated summaries and insights from your journal entries
+- **📊 Analytics**: View patterns in your mood and writing habits
+- **🔐 Secure Authentication**: Safe login with Clerk authentication
+- **📱 Responsive Design**: Works perfectly on desktop, tablet, and mobile
+- **🌙 Dark/Light Mode**: Choose your preferred theme
 
-## 🎯 Usage Flow
+## 🔒 Privacy & Security
 
-1. **Write**: Enter text manually
-2. **Analyze**: Click "Analyze with AI" to get mood insights
-3. **Review**: View detected mood, summary, and reasoning
-4. **Save**: Login and save the journal entry (if authenticated)
+- All journal entries are encrypted and securely stored
+- User authentication is handled by Clerk (industry-standard security)
+- AI processing is done securely without storing personal data permanently
+- You own your data and can export it anytime
 
-## 🔑 Key Features
+## 🤝 Contributing
 
-- **Real-time Rich Text Editing**: TipTap editor with formatting toolbar
-- **AI-Powered Analysis**: Gemini AI provides mood detection and insights
-- **Authentication Integration**: Clerk-based auth with protected save functionality
-- **Responsive Design**: Works on desktop and mobile devices
-- **Error Handling**: Graceful fallbacks for API failures
+We welcome contributions! Here's how you can help:
 
-## 📱 Navigation
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+3. **Make your changes** and test them
+4. **Commit your changes**: `git commit -m 'Add amazing feature'`
+5. **Push to the branch**: `git push origin feature/amazing-feature`
+6. **Open a Pull Request**
 
-- **Write** (`/write`) - Main journal writing interface
-- **Calendar** (`/calendar`) - _Coming soon_
-- **Insights** (`/insights`) - _Coming soon_
+## 📚 Technology Stack
 
-## 🎨 UI/UX Highlights
+### Frontend
+- **Next.js 14**: React framework for production
+- **TypeScript**: Type-safe JavaScript
+- **Tailwind CSS**: Utility-first CSS framework
+- **Radix UI**: Accessible component library
+- **Clerk**: Authentication and user management
 
-- Clean, modern interface with Tailwind CSS
-- Dark/light theme support
-- Loading states and feedback
-- Emoji-enhanced mood display
-- Gradient-styled AI analysis cards
-- Mobile-responsive design
+### Backend
+- **Node.js**: JavaScript runtime
+- **Express.js**: Web application framework
+- **TypeScript**: Type-safe JavaScript
+- **Prisma**: Database toolkit and ORM
+- **PostgreSQL**: Relational database
+
+### DevOps & Tools
+- **Docker**: Containerization
+- **Kubernetes**: Container orchestration
+- **Vitest**: Testing framework
+- **Playwright**: End-to-end testing
+- **ESLint & Prettier**: Code formatting and linting
+
+## 🚀 Deployment
+
+The application can be deployed using:
+- **Docker Compose**: For simple deployments
+- **Kubernetes**: For production-scale deployments (configurations in `k8s-manifests/`)
+- **Vercel**: For frontend hosting
+- **Railway**: For backend hosting
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🎯 Roadmap
+
+- [ ] Mobile app (React Native)
+- [ ] Voice journaling
+- [ ] Advanced AI insights and recommendations
+- [ ] Collaborative journaling features
+- [ ] Multi-language support
+
+## 👥 Authors
+
+- **Amit Amrutiya** - [GitHub](https://github.com/amitamrutiya)
+
+## 🙏 Acknowledgments
+
+- Thanks to all contributors who help improve JournAI
+- Inspired by the mental health and wellness community
+- Built with amazing open-source technologies
+
+---
+
+**Happy Journaling! 📖✨**
+
+Made with ❤️ for better mental wellness and self-reflection.
