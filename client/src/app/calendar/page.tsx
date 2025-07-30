@@ -208,7 +208,10 @@ export default function CalendarPage() {
 
   if (!isSignedIn) {
     return (
-      <div className="container mx-auto max-w-7xl px-4 py-8">
+      <div
+        className="container mx-auto max-w-7xl px-4 py-8"
+        data-testid="calendar-page-unauthenticated"
+      >
         <Card>
           <CardContent className="space-y-4 pt-6 text-center">
             <CalendarDays className="text-muted-foreground mx-auto h-12 w-12" />
@@ -228,7 +231,10 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
+    <div
+      className="container mx-auto max-w-7xl px-4 py-8"
+      data-testid="calendar-page"
+    >
       <div className="space-y-6">
         {/* Header */}
         <div className="space-y-2 text-center">

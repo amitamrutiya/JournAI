@@ -90,7 +90,10 @@ export default function InsightsPage() {
 
   if (!isSignedIn) {
     return (
-      <div className="container mx-auto max-w-7xl px-4 py-8">
+      <div
+        className="container mx-auto max-w-7xl px-4 py-8"
+        data-testid="insights-page-unauthenticated"
+      >
         <Card>
           <CardContent className="space-y-4 pt-6 text-center">
             <BarChart3 className="text-muted-foreground mx-auto h-12 w-12" />
@@ -109,7 +112,10 @@ export default function InsightsPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto max-w-7xl px-4 py-8">
+      <div
+        className="container mx-auto max-w-7xl px-4 py-8"
+        data-testid="insights-page-loading"
+      >
         <div className="space-y-6">
           <div className="bg-muted mx-auto h-12 w-64 animate-pulse rounded"></div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -141,7 +147,10 @@ export default function InsightsPage() {
 
   if (!displayInsights) {
     return (
-      <div className="container mx-auto max-w-7xl px-4 py-8">
+      <div
+        className="container mx-auto max-w-7xl px-4 py-8"
+        data-testid="insights-page-no-data"
+      >
         <Card>
           <CardContent className="space-y-4 pt-6 text-center">
             <Brain className="text-muted-foreground mx-auto h-12 w-12" />
@@ -161,7 +170,10 @@ export default function InsightsPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
+    <div
+      className="container mx-auto max-w-7xl px-4 py-8"
+      data-testid="insights-page"
+    >
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">

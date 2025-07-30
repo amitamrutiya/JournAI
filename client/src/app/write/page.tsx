@@ -13,7 +13,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import {
   useAnalyzeJournal,
   useGetJournalById,
-  usePDFExtract,
   useSaveJournal,
   useUpdateJournal,
 } from '@/hooks/use-journal-api';
@@ -161,7 +160,10 @@ function WritePageContent() {
   // Show loading state when fetching existing journal
   if (editJournalId && existingJournal.isPending) {
     return (
-      <div className="container mx-auto max-w-7xl px-4 py-8">
+      <div
+        className="container mx-auto max-w-7xl px-4 py-8"
+        data-testid="write-page-loading"
+      >
         <div className="flex h-96 items-center justify-center">
           <div className="space-y-4 text-center">
             <Loader2 className="text-muted-foreground mx-auto h-8 w-8 animate-spin" />
@@ -175,7 +177,10 @@ function WritePageContent() {
   // Show error state if journal not found
   if (editJournalId && existingJournal.isError) {
     return (
-      <div className="container mx-auto max-w-7xl px-4 py-8">
+      <div
+        className="container mx-auto max-w-7xl px-4 py-8"
+        data-testid="write-page-error"
+      >
         <Card>
           <CardContent className="space-y-4 pt-6 text-center">
             <div>
@@ -195,7 +200,10 @@ function WritePageContent() {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
+    <div
+      className="container mx-auto max-w-7xl px-4 py-8"
+      data-testid="write-page"
+    >
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between px-6">
