@@ -5,7 +5,7 @@
 ## ✨ What is JournAI?
 
 JournAI combines the traditional practice of journaling with modern AI technology to provide:
-- **Smart Writing Assistant**: AI-powered suggestions and prompts to help you express your thoughts
+- **Rich Text Editor**: Custom Editor with full functionality.
 - **Mood Tracking**: Track your emotions and see patterns over time
 - **Personalized Insights**: Get AI-generated summaries and reflections on your journal entries
 - **Secure & Private**: Your thoughts are safely stored and protected
